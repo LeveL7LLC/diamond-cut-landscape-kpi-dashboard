@@ -23,7 +23,7 @@ export default function KpiTile({
 }: KpiTileProps) {
   return (
     <div 
-      className="rounded-2xl bg-card/80 p-4 shadow-lg border border-card-border backdrop-blur-sm"
+      className="rounded-2xl bg-gradient-to-br from-card/90 via-card/80 to-card/70 p-4 shadow-lg border border-card-border backdrop-blur-sm"
       data-testid={testId}
     >
       <div className="flex items-start justify-between gap-3">
