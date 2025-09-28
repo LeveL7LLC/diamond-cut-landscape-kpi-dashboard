@@ -6,6 +6,7 @@ interface KpiTileProps {
   value: string;
   sub?: string;
   rightSlot?: React.ReactNode;
+  sparkline?: React.ReactNode;
   bottomSlot?: React.ReactNode;
   "data-testid"?: string;
 }
@@ -16,6 +17,7 @@ export default function KpiTile({
   value, 
   sub, 
   rightSlot, 
+  sparkline,
   bottomSlot,
   "data-testid": testId
 }: KpiTileProps) {
@@ -35,6 +37,7 @@ export default function KpiTile({
       </div>
       <div className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{value}</div>
       {sub && <div className="text-xs text-muted-foreground mt-1">{sub}</div>}
+      {sparkline && <div className="mt-2">{sparkline}</div>}
       {bottomSlot && <div className="mt-2">{bottomSlot}</div>}
     </div>
   );

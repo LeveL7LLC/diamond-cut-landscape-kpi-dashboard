@@ -7,6 +7,7 @@ import DateRangeSelector, { type DateRange } from './DateRangeSelector';
 import LeadSourceSelector, { LEAD_SOURCES, type LeadSource } from './LeadSourceSelector';
 import { LeadSourcesDropdown, CSRDropdown, SalesDropdown, ServicesDropdown } from './KpiDropdowns';
 import { SalesGoalsChart, ARAgingChart, CapacityChart } from './DashboardCharts';
+import Sparkline from './Sparkline';
 
 export default function Dashboard() {
   // Mock state management //todo: remove mock functionality
@@ -17,6 +18,19 @@ export default function Dashboard() {
   });
 
   const [selectedSources, setSelectedSources] = useState<LeadSource[]>([...LEAD_SOURCES]);
+
+  // Mock sparkline data //todo: remove mock functionality
+  const generateSparklineData = (baseValue: number, points: number = 14) => {
+    return Array.from({ length: points }, (_, i) => ({
+      value: baseValue + (Math.sin(i / 3) * baseValue * 0.15) + (Math.random() - 0.5) * baseValue * 0.1,
+      date: new Date(Date.now() - (points - i) * 86400000).toISOString().slice(0, 10)
+    }));
+  };
+
+  const leadsSparklineData = generateSparklineData(380, 14);
+  const bookingSparklineData = generateSparklineData(32, 14);
+  const closeSparklineData = generateSparklineData(48, 14);
+  const contractSparklineData = generateSparklineData(31103, 14);
 
   // Mock data for KPI tiles //todo: remove mock functionality
   const mockLeadSources = [
@@ -135,6 +149,7 @@ export default function Dashboard() {
           sub="2025-08-25 → 2025-09-28"
           data-testid="kpi-qualified-leads"
           rightSlot={<LeadSourcesDropdown />}
+          sparkline={<Sparkline data={leadsSparklineData} color="#22c55e" />}
           bottomSlot={leadSourcesLegend}
         />
         
@@ -145,6 +160,7 @@ export default function Dashboard() {
           sub="Leads → Consult"
           data-testid="kpi-booking-rate"
           rightSlot={<CSRDropdown />}
+          sparkline={<Sparkline data={bookingSparklineData} color="#60a5fa" />}
           bottomSlot={csrLegend}
         />
         
@@ -155,6 +171,7 @@ export default function Dashboard() {
           sub="Signed / Presented"
           data-testid="kpi-close-rate"
           rightSlot={<SalesDropdown />}
+          sparkline={<Sparkline data={closeSparklineData} color="#f59e0b" />}
           bottomSlot={salesRepsLegend}
         />
         
@@ -165,6 +182,7 @@ export default function Dashboard() {
           sub="2025-09-28 → 2025-09-28"
           data-testid="kpi-contract-value"
           rightSlot={<ServicesDropdown />}
+          sparkline={<Sparkline data={contractSparklineData} color="#a78bfa" />}
           bottomSlot={servicesLegend}
         />
       </div>
