@@ -189,7 +189,7 @@ export function ARAgingChart() {
               verticalAlign="bottom" 
               height={36}
               iconType="rect"
-              wrapperStyle={{ paddingTop: '20px' }}
+              wrapperStyle={{ paddingTop: '30px' }}
             />
           </PieChart>
         );
