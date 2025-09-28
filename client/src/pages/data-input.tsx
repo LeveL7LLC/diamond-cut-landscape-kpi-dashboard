@@ -12,8 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   Plus, Users, Target, TrendingUp, DollarSign, 
-  FileText, BarChart3, Calendar, Database 
+  FileText, BarChart3, Calendar, Database, Menu, X
 } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   insertLeadSourceSchema, insertCsrSchema, insertSalesRepSchema, insertServiceSchema,
   insertDailyLeadsSchema, insertDailyBookingsSchema, insertDailyClosesSchema,
@@ -33,6 +40,8 @@ export default function DataInput() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("core");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [location] = useLocation();
 
   // Generic mutation handler for all forms
   const createMutation = (endpoint: string, successMessage: string, invalidateKeys: string[]) => {
@@ -1593,9 +1602,47 @@ export default function DataInput() {
     <div className="min-h-screen bg-neutral-950 p-6">
       <div className="container mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-neutral-100 mb-2">
-            KPI Data Entry
-          </h1>
+          <div className="flex items-center gap-4 mb-2">
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-neutral-100 hover:bg-neutral-800 p-2 rounded-lg transition-all duration-200"
+                  data-testid="hamburger-menu-trigger"
+                >
+                  <div className="relative w-6 h-6">
+                    {/* Animated hamburger/X icon */}
+                    <div className={`absolute inset-0 transition-all duration-300 ${menuOpen ? 'rotate-45 opacity-0' : 'rotate-0 opacity-100'}`}>
+                      <Menu className="w-6 h-6" />
+                    </div>
+                    <div className={`absolute inset-0 transition-all duration-300 ${menuOpen ? 'rotate-0 opacity-100' : '-rotate-45 opacity-0'}`}>
+                      <X className="w-6 h-6" />
+                    </div>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/" className="flex items-center gap-2 w-full">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Dashboard</span>
+                    {location === "/" && <div className="ml-auto w-2 h-2 bg-primary rounded-full" />}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/data-input" className="flex items-center gap-2 w-full">
+                    <Plus className="h-4 w-4" />
+                    <span>Data Entry</span>
+                    {location === "/data-input" && <div className="ml-auto w-2 h-2 bg-primary rounded-full" />}
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <h1 className="text-3xl font-semibold text-neutral-100">
+              KPI Data Entry
+            </h1>
+          </div>
           <p className="text-neutral-400">
             Enter data for Diamond Cut Landscape's key performance indicators
           </p>
