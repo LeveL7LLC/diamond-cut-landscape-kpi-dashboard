@@ -85,8 +85,8 @@ export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}
             }}
           />
           <Legend />
-          <Bar dataKey="actual" fill="#22c55e" name="Actual" />
-          <Bar dataKey="goal" fill="#60a5fa" name="Goal" />
+          <Bar dataKey="actual" fill="#22c55e" name="Actual" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="goal" fill="#60a5fa" name="Goal" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
@@ -109,7 +109,7 @@ export function ARAgingChart() {
             }}
             formatter={(value: any) => [`$${value.toLocaleString()}`, 'Amount']}
           />
-          <Bar dataKey="amount" fill={COLORS[0]} />
+          <Bar dataKey="amount" fill={COLORS[0]} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
