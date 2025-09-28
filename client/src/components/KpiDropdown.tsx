@@ -60,7 +60,7 @@ export default function KpiDropdown({
             onClick={() => setOpen(false)}
           />
           
-          <div className="absolute right-0 mt-1 w-40 rounded-lg border border-card-border bg-card/95 p-2 shadow-xl z-20 backdrop-blur-sm">
+          <div className="absolute right-0 mt-1 w-48 rounded-lg border border-card-border bg-card/95 p-2 shadow-xl z-50 backdrop-blur-sm">
             <div className="flex gap-1 mb-2">
               <button 
                 onClick={selectAll}
@@ -78,7 +78,7 @@ export default function KpiDropdown({
               </button>
             </div>
 
-            <div className="space-y-0.5 max-h-32 overflow-y-auto">
+            <div className="space-y-0.5">
               {options.map((option) => {
                 const isSelected = selected.includes(option.value);
                 return (
