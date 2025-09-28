@@ -7,6 +7,7 @@ import DateRangeSelector, { type DateRange } from './DateRangeSelector';
 import { LeadSourcesDropdown, CSRDropdown, SalesDropdown, ServicesDropdown, LEAD_SOURCES_OPTIONS, CSR_OPTIONS, SALES_OPTIONS, SERVICE_OPTIONS } from './KpiDropdowns';
 import { SalesGoalsChart, ARAgingChart, CapacityChart } from './DashboardCharts';
 import SegmentedLine from './SegmentedLine';
+import logoPath from "@assets/DCL-Agave_1759084213044.png";
 
 export default function Dashboard() {
   // Mock state management //todo: remove mock functionality
@@ -134,7 +135,11 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 bg-primary rounded-lg"></div>
+          <img 
+            src={logoPath} 
+            alt="Diamond Cut Landscape Logo" 
+            className="w-8 h-8 object-contain"
+          />
           <div>
             <h1 className="text-2xl font-bold">Diamond Cut Landscape</h1>
             <p className="text-sm text-muted-foreground">Executive Dashboard</p>
