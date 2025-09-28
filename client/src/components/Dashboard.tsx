@@ -272,7 +272,7 @@ export default function Dashboard() {
 
       {/* Secondary Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ProfitWidget
             label="Gross Profit"
             value={0.46}
@@ -287,7 +287,7 @@ export default function Dashboard() {
           />
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Monthly Revenue Chart */}
           <div className="rounded-2xl bg-card/80 p-4 border border-card-border backdrop-blur-sm" data-testid="revenue-monthly">
             <div className="text-sm text-muted-foreground mb-2">September Revenue</div>
@@ -304,7 +304,7 @@ export default function Dashboard() {
                 <div className="bg-chart-3 h-full" style={{ width: '16%' }}></div>
                 <div className="bg-muted h-full" style={{ width: '15%' }}></div>
               </div>
-              <div className="grid grid-cols-3 gap-1 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs">
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
                   <span>Diego: $180k</span>
@@ -337,7 +337,7 @@ export default function Dashboard() {
                 <div className="bg-chart-3 h-full" style={{ width: '14%' }}></div>
                 <div className="bg-muted h-full" style={{ width: '26%' }}></div>
               </div>
-              <div className="grid grid-cols-3 gap-1 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs">
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
                   <span>Diego: $1.65M</span>
