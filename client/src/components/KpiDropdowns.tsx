@@ -38,56 +38,76 @@ export const SERVICE_OPTIONS = [
   { value: "turf", label: "Turf", color: "#ef4444" }
 ];
 
-export function LeadSourcesDropdown() {
+export function LeadSourcesDropdown({ onSelectionChange }: { onSelectionChange?: (selected: string[]) => void }) {
   const [selected, setSelected] = useState(LEAD_SOURCES_OPTIONS.map(opt => opt.value));
+  
+  const handleChange = (newSelected: string[]) => {
+    setSelected(newSelected);
+    onSelectionChange?.(newSelected);
+  };
   
   return (
     <KpiDropdown
       options={LEAD_SOURCES_OPTIONS}
       selected={selected}
-      onSelectionChange={setSelected}
+      onSelectionChange={handleChange}
       placeholder="All Sources"
       data-testid="dropdown-lead-sources"
     />
   );
 }
 
-export function CSRDropdown() {
+export function CSRDropdown({ onSelectionChange }: { onSelectionChange?: (selected: string[]) => void }) {
   const [selected, setSelected] = useState(CSR_OPTIONS.map(opt => opt.value));
+  
+  const handleChange = (newSelected: string[]) => {
+    setSelected(newSelected);
+    onSelectionChange?.(newSelected);
+  };
   
   return (
     <KpiDropdown
       options={CSR_OPTIONS}
       selected={selected}
-      onSelectionChange={setSelected}
+      onSelectionChange={handleChange}
       placeholder="All CSRs"
       data-testid="dropdown-csr"
     />
   );
 }
 
-export function SalesDropdown() {
+export function SalesDropdown({ onSelectionChange }: { onSelectionChange?: (selected: string[]) => void }) {
   const [selected, setSelected] = useState(SALES_OPTIONS.map(opt => opt.value));
+  
+  const handleChange = (newSelected: string[]) => {
+    setSelected(newSelected);
+    onSelectionChange?.(newSelected);
+  };
   
   return (
     <KpiDropdown
       options={SALES_OPTIONS}
       selected={selected}
-      onSelectionChange={setSelected}
+      onSelectionChange={handleChange}
       placeholder="All Sales"
       data-testid="dropdown-sales"
     />
   );
 }
 
-export function ServicesDropdown() {
+export function ServicesDropdown({ onSelectionChange }: { onSelectionChange?: (selected: string[]) => void }) {
   const [selected, setSelected] = useState(SERVICE_OPTIONS.map(opt => opt.value));
+  
+  const handleChange = (newSelected: string[]) => {
+    setSelected(newSelected);
+    onSelectionChange?.(newSelected);
+  };
   
   return (
     <KpiDropdown
       options={SERVICE_OPTIONS}
       selected={selected}
-      onSelectionChange={setSelected}
+      onSelectionChange={handleChange}
       placeholder="All Services"
       data-testid="dropdown-services"
     />

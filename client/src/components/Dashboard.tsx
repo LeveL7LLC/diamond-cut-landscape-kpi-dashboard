@@ -5,9 +5,9 @@ import Thermometer from './Thermometer';
 import ProfitWidget from './ProfitWidget';
 import DateRangeSelector, { type DateRange } from './DateRangeSelector';
 import LeadSourceSelector, { LEAD_SOURCES, type LeadSource } from './LeadSourceSelector';
-import { LeadSourcesDropdown, CSRDropdown, SalesDropdown, ServicesDropdown } from './KpiDropdowns';
+import { LeadSourcesDropdown, CSRDropdown, SalesDropdown, ServicesDropdown, LEAD_SOURCES_OPTIONS, CSR_OPTIONS, SALES_OPTIONS, SERVICE_OPTIONS } from './KpiDropdowns';
 import { SalesGoalsChart, ARAgingChart, CapacityChart } from './DashboardCharts';
-import Sparkline from './Sparkline';
+import SegmentedLine from './SegmentedLine';
 
 export default function Dashboard() {
   // Mock state management //todo: remove mock functionality
@@ -19,18 +19,28 @@ export default function Dashboard() {
 
   const [selectedSources, setSelectedSources] = useState<LeadSource[]>([...LEAD_SOURCES]);
 
-  // Mock sparkline data //todo: remove mock functionality
-  const generateSparklineData = (baseValue: number, points: number = 14) => {
-    return Array.from({ length: points }, (_, i) => ({
-      value: baseValue + (Math.sin(i / 3) * baseValue * 0.15) + (Math.random() - 0.5) * baseValue * 0.1,
-      date: new Date(Date.now() - (points - i) * 86400000).toISOString().slice(0, 10)
-    }));
+  // State for dropdown selections
+  const [selectedLeadSources, setSelectedLeadSources] = useState(LEAD_SOURCES_OPTIONS.map(opt => opt.value));
+  const [selectedCSRs, setSelectedCSRs] = useState(CSR_OPTIONS.map(opt => opt.value));
+  const [selectedSalesReps, setSelectedSalesReps] = useState(SALES_OPTIONS.map(opt => opt.value));
+  const [selectedServices, setSelectedServices] = useState(SERVICE_OPTIONS.map(opt => opt.value));
+
+  // Generate segmented line data based on selections //todo: remove mock functionality
+  const generateSegmentData = (options: any[], selected: string[]) => {
+    return options
+      .filter(opt => selected.includes(opt.value))
+      .map(opt => ({
+        value: opt.value,
+        label: opt.label,
+        color: opt.color,
+        proportion: Math.random() * 0.5 + 0.1 // Mock proportional data
+      }));
   };
 
-  const leadsSparklineData = generateSparklineData(380, 14);
-  const bookingSparklineData = generateSparklineData(32, 14);
-  const closeSparklineData = generateSparklineData(48, 14);
-  const contractSparklineData = generateSparklineData(31103, 14);
+  const leadsSegmentData = generateSegmentData(LEAD_SOURCES_OPTIONS, selectedLeadSources);
+  const csrSegmentData = generateSegmentData(CSR_OPTIONS, selectedCSRs);
+  const salesSegmentData = generateSegmentData(SALES_OPTIONS, selectedSalesReps);
+  const servicesSegmentData = generateSegmentData(SERVICE_OPTIONS, selectedServices);
 
   // Mock data for KPI tiles //todo: remove mock functionality
   const mockLeadSources = [
@@ -148,8 +158,8 @@ export default function Dashboard() {
           value="380"
           sub="2025-08-25 → 2025-09-28"
           data-testid="kpi-qualified-leads"
-          rightSlot={<LeadSourcesDropdown />}
-          sparkline={<Sparkline data={leadsSparklineData} color="#22c55e" />}
+          rightSlot={<LeadSourcesDropdown onSelectionChange={setSelectedLeadSources} />}
+          sparkline={<SegmentedLine segments={leadsSegmentData} />}
           bottomSlot={leadSourcesLegend}
         />
         
@@ -159,8 +169,8 @@ export default function Dashboard() {
           value="32%"
           sub="Leads → Consult"
           data-testid="kpi-booking-rate"
-          rightSlot={<CSRDropdown />}
-          sparkline={<Sparkline data={bookingSparklineData} color="#60a5fa" />}
+          rightSlot={<CSRDropdown onSelectionChange={setSelectedCSRs} />}
+          sparkline={<SegmentedLine segments={csrSegmentData} />}
           bottomSlot={csrLegend}
         />
         
@@ -170,8 +180,8 @@ export default function Dashboard() {
           value="48%"
           sub="Signed / Presented"
           data-testid="kpi-close-rate"
-          rightSlot={<SalesDropdown />}
-          sparkline={<Sparkline data={closeSparklineData} color="#f59e0b" />}
+          rightSlot={<SalesDropdown onSelectionChange={setSelectedSalesReps} />}
+          sparkline={<SegmentedLine segments={salesSegmentData} />}
           bottomSlot={salesRepsLegend}
         />
         
@@ -181,8 +191,8 @@ export default function Dashboard() {
           value="$31,103"
           sub="2025-09-28 → 2025-09-28"
           data-testid="kpi-contract-value"
-          rightSlot={<ServicesDropdown />}
-          sparkline={<Sparkline data={contractSparklineData} color="#a78bfa" />}
+          rightSlot={<ServicesDropdown onSelectionChange={setSelectedServices} />}
+          sparkline={<SegmentedLine segments={servicesSegmentData} />}
           bottomSlot={servicesLegend}
         />
       </div>
