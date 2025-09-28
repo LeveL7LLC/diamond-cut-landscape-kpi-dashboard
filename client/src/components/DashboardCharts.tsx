@@ -181,10 +181,8 @@ export function ARAgingChart() {
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))', 
                 border: '1px solid hsl(var(--border))',
-                borderRadius: '8px',
-                color: '#ffffff'
+                borderRadius: '8px'
               }}
-              labelStyle={{ color: '#ffffff' }}
               formatter={(value: any) => [`${value}%`, 'Share']}
             />
             <Legend 
