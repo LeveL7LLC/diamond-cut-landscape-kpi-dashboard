@@ -183,6 +183,7 @@ export function ARAgingChart() {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px'
               }}
+              itemStyle={{ color: 'hsl(var(--foreground))' }}
               formatter={(value: any) => [`${value}%`, 'Share']}
             />
             <Legend 
