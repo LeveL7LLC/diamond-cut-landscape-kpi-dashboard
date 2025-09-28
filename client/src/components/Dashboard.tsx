@@ -244,73 +244,25 @@ export default function Dashboard() {
           />
         </div>
         
+        <div className="grid grid-cols-2 gap-4">
+          <ProfitWidget
+            label="Monthly Revenue"
+            value={0.85}
+            mom={0.15}
+            data-testid="revenue-monthly"
+          />
+          <ProfitWidget
+            label="Annual Revenue"
+            value={0.74}
+            mom={0.08}
+            data-testid="revenue-annual"
+          />
+        </div>
+        
         <Thermometer
           value={0.78}
           label="Progress Billing On-Time"
           data-testid="thermometer-billing"
-        />
-        
-        {/* Monthly Revenue Goal vs Actual */}
-        <KpiTile
-          icon={Target}
-          label="Monthly Revenue"
-          value="$425,780"
-          sub="September Goal: $500,000"
-          data-testid="kpi-monthly-revenue"
-          sparkline={
-            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
-              <div className="bg-primary h-full" style={{ width: '85%' }}></div>
-              <div className="bg-muted h-full" style={{ width: '15%' }}></div>
-            </div>
-          }
-          bottomSlot={
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Actual: $425,780 (85%)</span>
-                <span>Remaining: $74,220</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span>Diego: $180,450</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-chart-2 rounded-full"></div>
-                  <span>Brooke: $165,330</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-chart-3 rounded-full"></div>
-                  <span>Sam: $80,000</span>
-                </div>
-              </div>
-            </div>
-          }
-        />
-        
-        {/* Yearly Revenue Goal vs Actual */}
-        <KpiTile
-          icon={TrendingUp}
-          label="2024 Revenue"
-          value="$3,850,920"
-          sub="Annual Goal: $5,200,000"
-          data-testid="kpi-yearly-revenue"
-          sparkline={
-            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
-              <div className="bg-primary h-full" style={{ width: '74%' }}></div>
-              <div className="bg-muted h-full" style={{ width: '26%' }}></div>
-            </div>
-          }
-          bottomSlot={
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Actual: $3,850,920 (74%)</span>
-                <span>Remaining: $1,349,080</span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                On track for $5.1M based on current pace
-              </div>
-            </div>
-          }
         />
       </div>
 
