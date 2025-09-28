@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle } from 'lucide-react';
+import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle, Bell, TrendingUp, Target } from 'lucide-react';
 import KpiTile from './KpiTile';
 import Thermometer from './Thermometer';
 import ProfitWidget from './ProfitWidget';
@@ -15,6 +15,8 @@ export default function Dashboard() {
     end: '2025-09-28',
     preset: '30d'
   });
+
+  const [showAlerts, setShowAlerts] = useState(false);
 
 
   // State for dropdown selections
@@ -141,6 +143,37 @@ export default function Dashboard() {
         
         <div className="flex items-center gap-4">
           <DateRangeSelector range={dateRange} setRange={setDateRange} />
+          
+          {/* Alert Notification Bell */}
+          <div className="relative">
+            <button
+              onClick={() => setShowAlerts(!showAlerts)}
+              className="p-2 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors relative"
+              data-testid="button-alerts"
+            >
+              <Bell className="w-4 h-4" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full flex items-center justify-center">
+                <span className="text-xs text-white font-medium">2</span>
+              </div>
+            </button>
+            
+            {showAlerts && (
+              <div className="absolute right-0 top-12 w-80 bg-card border border-card-border rounded-lg shadow-lg p-4 z-50">
+                <div className="text-sm font-medium mb-3">Active Alerts</div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm p-2 rounded bg-muted/20">
+                    <div className="w-2 h-2 bg-chart-3 rounded-full"></div>
+                    <span>Pipeline schedule: 35% late</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm p-2 rounded bg-muted/20">
+                    <div className="w-2 h-2 bg-destructive rounded-full"></div>
+                    <span>Payment difference: 65% late</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
           <div className="text-sm text-muted-foreground">
             Updated {new Date().toLocaleTimeString()}
           </div>
@@ -217,17 +250,68 @@ export default function Dashboard() {
           data-testid="thermometer-billing"
         />
         
-        <div className="rounded-2xl bg-card/80 p-4 border border-card-border backdrop-blur-sm">
-          <div className="text-sm text-muted-foreground mb-2">Alerts</div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-2 h-2 bg-chart-3 rounded-full"></div>
-            <span>Pipeline schedule: 35% late</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm mt-1">
-            <div className="w-2 h-2 bg-destructive rounded-full"></div>
-            <span>Payment difference: 65% late</span>
-          </div>
-        </div>
+        {/* Monthly Revenue Goal vs Actual */}
+        <KpiTile
+          icon={Target}
+          label="Monthly Revenue"
+          value="$425,780"
+          sub="September Goal: $500,000"
+          data-testid="kpi-monthly-revenue"
+          sparkline={
+            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
+              <div className="bg-primary h-full" style={{ width: '85%' }}></div>
+              <div className="bg-muted h-full" style={{ width: '15%' }}></div>
+            </div>
+          }
+          bottomSlot={
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Actual: $425,780 (85%)</span>
+                <span>Remaining: $74,220</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <span>Diego: $180,450</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-chart-2 rounded-full"></div>
+                  <span>Brooke: $165,330</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-chart-3 rounded-full"></div>
+                  <span>Sam: $80,000</span>
+                </div>
+              </div>
+            </div>
+          }
+        />
+        
+        {/* Yearly Revenue Goal vs Actual */}
+        <KpiTile
+          icon={TrendingUp}
+          label="2024 Revenue"
+          value="$3,850,920"
+          sub="Annual Goal: $5,200,000"
+          data-testid="kpi-yearly-revenue"
+          sparkline={
+            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
+              <div className="bg-primary h-full" style={{ width: '74%' }}></div>
+              <div className="bg-muted h-full" style={{ width: '26%' }}></div>
+            </div>
+          }
+          bottomSlot={
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Actual: $3,850,920 (74%)</span>
+                <span>Remaining: $1,349,080</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                On track for $5.1M based on current pace
+              </div>
+            </div>
+          }
+        />
       </div>
 
       {/* Financial & Customer Concerns Row */}
