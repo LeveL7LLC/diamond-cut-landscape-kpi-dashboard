@@ -163,14 +163,14 @@ export function ARAgingChart() {
       
       case 'service-mix':
         return (
-          <PieChart margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
+          <PieChart margin={{ top: 25, right: 20, left: 20, bottom: 60 }}>
             <Pie
               data={serviceMixData}
               dataKey="value"
               nameKey="name"
               cx="50%"
-              cy="45%"
-              outerRadius={65}
+              cy="50%"
+              outerRadius={60}
               innerRadius={20}
             >
               {serviceMixData.map((entry, index) => (
