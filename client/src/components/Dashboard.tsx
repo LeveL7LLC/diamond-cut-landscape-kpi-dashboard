@@ -5,6 +5,7 @@ import Thermometer from './Thermometer';
 import ProfitWidget from './ProfitWidget';
 import DateRangeSelector, { type DateRange } from './DateRangeSelector';
 import LeadSourceSelector, { LEAD_SOURCES, type LeadSource } from './LeadSourceSelector';
+import { LeadSourcesDropdown, CSRDropdown, SalesDropdown, ServicesDropdown } from './KpiDropdowns';
 import { SalesGoalsChart, ARAgingChart, CapacityChart } from './DashboardCharts';
 
 export default function Dashboard() {
@@ -133,6 +134,7 @@ export default function Dashboard() {
           value="380"
           sub="2025-08-25 → 2025-09-28"
           data-testid="kpi-qualified-leads"
+          rightSlot={<LeadSourcesDropdown />}
           bottomSlot={leadSourcesLegend}
         />
         
@@ -142,6 +144,7 @@ export default function Dashboard() {
           value="32%"
           sub="Leads → Consult"
           data-testid="kpi-booking-rate"
+          rightSlot={<CSRDropdown />}
           bottomSlot={csrLegend}
         />
         
@@ -151,6 +154,7 @@ export default function Dashboard() {
           value="48%"
           sub="Signed / Presented"
           data-testid="kpi-close-rate"
+          rightSlot={<SalesDropdown />}
           bottomSlot={salesRepsLegend}
         />
         
@@ -160,6 +164,7 @@ export default function Dashboard() {
           value="$31,103"
           sub="2025-09-28 → 2025-09-28"
           data-testid="kpi-contract-value"
+          rightSlot={<ServicesDropdown />}
           bottomSlot={servicesLegend}
         />
       </div>
