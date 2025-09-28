@@ -15,6 +15,7 @@ import {
   Cell,
   Legend
 } from "recharts";
+import { SalesDropdown } from './KpiDropdowns';
 
 // Mock data for demonstrations //todo: remove mock functionality
 const salesGoalsData = [
@@ -44,20 +45,33 @@ interface ChartCardProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  rightSlot?: React.ReactNode;
 }
 
-function ChartCard({ title, children, className = "" }: ChartCardProps) {
+function ChartCard({ title, children, className = "", rightSlot }: ChartCardProps) {
   return (
-    <div className={`rounded-2xl bg-card/80 p-4 border border-card-border backdrop-blur-sm ${className}`}>
-      <h3 className="text-sm text-muted-foreground mb-4">{title}</h3>
+    <div className={`rounded-2xl bg-gradient-to-br from-card/90 via-card/80 to-card/70 p-4 border border-card-border backdrop-blur-sm ${className}`}>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-medium text-foreground/90">{title}</h3>
+        {rightSlot}
+      </div>
       {children}
     </div>
   );
 }
 
-export function SalesGoalsChart() {
+interface SalesGoalsChartProps {
+  onSelectionChange?: (selected: string[]) => void;
+}
+
+export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}) {
   return (
-    <ChartCard title="Sales Goals vs Actual ($)">
+    <ChartCard 
+      title="Sales Goals vs Actual ($)"
+      rightSlot={
+        <SalesDropdown onSelectionChange={onSelectionChange} />
+      }
+    >
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={salesGoalsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />

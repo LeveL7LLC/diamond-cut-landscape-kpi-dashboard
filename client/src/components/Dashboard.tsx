@@ -4,7 +4,6 @@ import KpiTile from './KpiTile';
 import Thermometer from './Thermometer';
 import ProfitWidget from './ProfitWidget';
 import DateRangeSelector, { type DateRange } from './DateRangeSelector';
-import LeadSourceSelector, { LEAD_SOURCES, type LeadSource } from './LeadSourceSelector';
 import { LeadSourcesDropdown, CSRDropdown, SalesDropdown, ServicesDropdown, LEAD_SOURCES_OPTIONS, CSR_OPTIONS, SALES_OPTIONS, SERVICE_OPTIONS } from './KpiDropdowns';
 import { SalesGoalsChart, ARAgingChart, CapacityChart } from './DashboardCharts';
 import SegmentedLine from './SegmentedLine';
@@ -17,7 +16,6 @@ export default function Dashboard() {
     preset: '30d'
   });
 
-  const [selectedSources, setSelectedSources] = useState<LeadSource[]>([...LEAD_SOURCES]);
 
   // State for dropdown selections
   const [selectedLeadSources, setSelectedLeadSources] = useState(LEAD_SOURCES_OPTIONS.map(opt => opt.value));
@@ -143,7 +141,6 @@ export default function Dashboard() {
         
         <div className="flex items-center gap-4">
           <DateRangeSelector range={dateRange} setRange={setDateRange} />
-          <LeadSourceSelector selected={selectedSources} setSelected={setSelectedSources} />
           <div className="text-sm text-muted-foreground">
             Updated {new Date().toLocaleTimeString()}
           </div>
@@ -235,7 +232,7 @@ export default function Dashboard() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        <SalesGoalsChart />
+        <SalesGoalsChart onSelectionChange={setSelectedSalesReps} />
         <ARAgingChart />
         <CapacityChart />
       </div>
