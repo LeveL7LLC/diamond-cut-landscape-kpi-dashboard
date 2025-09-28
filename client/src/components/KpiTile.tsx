@@ -31,7 +31,7 @@ export default function KpiTile({
           <div className="p-2 rounded-xl bg-muted">
             <Icon size={24} className="text-primary" />
           </div>
-          <div className="text-sm text-muted-foreground">{label}</div>
+          <div className="text-base font-medium text-foreground/90">{label}</div>
         </div>
         {rightSlot}
       </div>
