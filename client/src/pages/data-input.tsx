@@ -10,7 +10,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import Navigation from "@/components/Navigation";
 import { 
   Plus, Users, Target, TrendingUp, DollarSign, 
   FileText, BarChart3, Calendar, Database 
@@ -1592,7 +1591,6 @@ export default function DataInput() {
 
   return (
     <div className="min-h-screen bg-neutral-950 p-6">
-      <Navigation />
       <div className="container mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold text-neutral-100 mb-2">

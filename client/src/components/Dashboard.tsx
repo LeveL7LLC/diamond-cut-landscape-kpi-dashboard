@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle, Bell, TrendingUp, Target } from 'lucide-react';
+import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle, Bell, TrendingUp, Target, BarChart3, Plus } from 'lucide-react';
+import { Link, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import KpiTile from './KpiTile';
 import Thermometer from './Thermometer';
 import ProfitWidget from './ProfitWidget';
@@ -10,6 +17,8 @@ import SegmentedLine from './SegmentedLine';
 import logoPath from "@assets/DCL-Agave_1759084213044.png";
 
 export default function Dashboard() {
+  const [location] = useLocation();
+  
   // Mock state management //todo: remove mock functionality
   const [dateRange, setDateRange] = useState<DateRange>({
     start: '2025-08-25',
@@ -134,17 +143,46 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background text-foreground p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <img 
-            src={logoPath} 
-            alt="Diamond Cut Landscape Logo" 
-            className="w-16 h-16 object-contain"
-          />
-          <div>
-            <h1 className="text-2xl font-bold">Diamond Cut Landscape</h1>
-            <p className="text-sm text-muted-foreground">Executive Dashboard</p>
-          </div>
-        </div>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <div className="flex items-center gap-4 cursor-pointer hover-elevate p-2 rounded-lg" data-testid="nav-logo-trigger">
+              <img 
+                src={logoPath} 
+                alt="Diamond Cut Landscape Logo" 
+                className="w-16 h-16 object-contain"
+              />
+              <div>
+                <h1 className="text-2xl font-bold">Diamond Cut Landscape</h1>
+                <p className="text-sm text-muted-foreground">Executive Dashboard</p>
+              </div>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-48 p-2" side="bottom" align="start">
+            <div className="flex flex-col gap-1">
+              <Link href="/">
+                <Button 
+                  variant={location === "/" ? "default" : "ghost"}
+                  className="w-full justify-start flex items-center gap-2"
+                  data-testid="nav-dashboard"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+              
+              <Link href="/data-input">
+                <Button 
+                  variant={location === "/data-input" ? "default" : "ghost"}
+                  className="w-full justify-start flex items-center gap-2"
+                  data-testid="nav-data-input"
+                >
+                  <Plus className="h-4 w-4" />
+                  Data Entry
+                </Button>
+              </Link>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
         
         <div className="flex items-center gap-4">
           <DateRangeSelector range={dateRange} setRange={setDateRange} />
