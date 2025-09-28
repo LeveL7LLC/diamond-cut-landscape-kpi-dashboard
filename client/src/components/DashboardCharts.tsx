@@ -163,15 +163,15 @@ export function ARAgingChart() {
       
       case 'service-mix':
         return (
-          <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <PieChart margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
             <Pie
               data={serviceMixData}
               dataKey="value"
               nameKey="name"
               cx="50%"
-              cy="50%"
-              outerRadius={80}
-              innerRadius={25}
+              cy="45%"
+              outerRadius={65}
+              innerRadius={20}
             >
               {serviceMixData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -185,7 +185,12 @@ export function ARAgingChart() {
               }}
               formatter={(value: any) => [`${value}%`, 'Share']}
             />
-            <Legend />
+            <Legend 
+              verticalAlign="bottom" 
+              height={36}
+              iconType="rect"
+              wrapperStyle={{ paddingTop: '10px' }}
+            />
           </PieChart>
         );
     }
