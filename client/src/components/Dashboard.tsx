@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck } from 'lucide-react';
+import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle } from 'lucide-react';
 import KpiTile from './KpiTile';
 import Thermometer from './Thermometer';
 import ProfitWidget from './ProfitWidget';
@@ -228,6 +228,69 @@ export default function Dashboard() {
             <span>Payment difference: 65% late</span>
           </div>
         </div>
+      </div>
+
+      {/* Financial & Customer Concerns Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <KpiTile
+          icon={Banknote}
+          label="Project Collections"
+          value="$487,320"
+          sub="Collected vs Outstanding"
+          data-testid="kpi-project-collections"
+          sparkline={
+            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
+              <div className="bg-primary h-full" style={{ width: '65%' }}></div>
+              <div className="bg-chart-2 h-full" style={{ width: '35%' }}></div>
+            </div>
+          }
+          bottomSlot={
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Collected: $316,758 (65%)</span>
+              <span>Outstanding: $170,562 (35%)</span>
+            </div>
+          }
+        />
+        
+        <KpiTile
+          icon={Receipt}
+          label="Collection Due"
+          value="$89,450"
+          sub="Jobs Completed"
+          data-testid="kpi-collection-due"
+          sparkline={
+            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
+              <div className="bg-destructive h-full" style={{ width: '100%' }}></div>
+            </div>
+          }
+          bottomSlot={
+            <div className="text-xs text-muted-foreground">
+              12 completed jobs awaiting payment
+            </div>
+          }
+        />
+        
+        <KpiTile
+          icon={AlertTriangle}
+          label="Customer Concerns"
+          value="17"
+          sub="Active CCIs"
+          data-testid="kpi-customer-concerns"
+          sparkline={
+            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
+              <div className="bg-chart-3 h-full" style={{ width: '45%' }}></div>
+              <div className="bg-chart-4 h-full" style={{ width: '30%' }}></div>
+              <div className="bg-destructive h-full" style={{ width: '25%' }}></div>
+            </div>
+          }
+          bottomSlot={
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Low: 8</span>
+              <span>Med: 5</span>
+              <span>High: 4</span>
+            </div>
+          }
+        />
       </div>
 
       {/* Charts Section */}
