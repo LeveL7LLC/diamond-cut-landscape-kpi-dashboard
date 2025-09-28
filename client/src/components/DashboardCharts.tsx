@@ -16,6 +16,7 @@ import {
   Legend
 } from "recharts";
 import { SalesDropdown } from './KpiDropdowns';
+import { useState } from 'react';
 
 // Mock data for demonstrations //todo: remove mock functionality
 const salesGoalsData = [
@@ -93,24 +94,135 @@ export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}
   );
 }
 
+// Additional mock data for new chart types
+const marginVarianceData = [
+  { month: "Jan", actual: 42, target: 45 },
+  { month: "Feb", actual: 38, target: 45 },
+  { month: "Mar", actual: 48, target: 45 },
+  { month: "Apr", actual: 52, target: 45 },
+  { month: "May", actual: 44, target: 45 },
+  { month: "Jun", actual: 46, target: 45 }
+];
+
+const serviceMixData = [
+  { name: "Hardscapes", value: 35, color: "#22c55e" },
+  { name: "Planting", value: 25, color: "#60a5fa" },
+  { name: "Irrigation", value: 20, color: "#f59e0b" },
+  { name: "Lighting", value: 12, color: "#a78bfa" },
+  { name: "Other", value: 8, color: "#ef4444" }
+];
+
 export function ARAgingChart() {
+  const [activeChart, setActiveChart] = useState<'ar-aging' | 'margin-variance' | 'service-mix'>('ar-aging');
+
+  const chartButtons = [
+    { id: 'ar-aging' as const, label: 'AR Aging' },
+    { id: 'margin-variance' as const, label: 'Margin Variance' },
+    { id: 'service-mix' as const, label: 'Service Mix' }
+  ];
+
+  const renderChart = () => {
+    switch (activeChart) {
+      case 'ar-aging':
+        return (
+          <BarChart data={arAgingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'hsl(var(--card))', 
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px'
+              }}
+              formatter={(value: any) => [`$${value.toLocaleString()}`, 'Amount']}
+            />
+            <Bar dataKey="amount" fill={COLORS[0]} radius={[4, 4, 0, 0]} />
+          </BarChart>
+        );
+      
+      case 'margin-variance':
+        return (
+          <LineChart data={marginVarianceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'hsl(var(--card))', 
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px'
+              }}
+              formatter={(value: any) => [`${value}%`, '']}
+            />
+            <Legend />
+            <Line type="monotone" dataKey="actual" stroke="#22c55e" strokeWidth={2} name="Actual" />
+            <Line type="monotone" dataKey="target" stroke="#60a5fa" strokeWidth={2} name="Target" />
+          </LineChart>
+        );
+      
+      case 'service-mix':
+        return (
+          <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <Pie
+              data={serviceMixData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              innerRadius={25}
+            >
+              {serviceMixData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'hsl(var(--card))', 
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px'
+              }}
+              formatter={(value: any) => [`${value}%`, 'Share']}
+            />
+            <Legend />
+          </PieChart>
+        );
+    }
+  };
+
+  const getTitle = () => {
+    switch (activeChart) {
+      case 'ar-aging': return 'AR Aging';
+      case 'margin-variance': return 'Margin Variance (%)';
+      case 'service-mix': return 'Service Mix (%)';
+    }
+  };
+
   return (
-    <ChartCard title="AR Aging">
+    <ChartCard 
+      title={getTitle()}
+      rightSlot={
+        <div className="flex gap-1">
+          {chartButtons.map((button) => (
+            <button
+              key={button.id}
+              onClick={() => setActiveChart(button.id)}
+              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                activeChart === button.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/20 text-muted-foreground hover:bg-muted/40'
+              }`}
+              data-testid={`button-chart-${button.id}`}
+            >
+              {button.label}
+            </button>
+          ))}
+        </div>
+      }
+    >
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={arAgingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: 'hsl(var(--card))', 
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '8px'
-            }}
-            formatter={(value: any) => [`$${value.toLocaleString()}`, 'Amount']}
-          />
-          <Bar dataKey="amount" fill={COLORS[0]} radius={[4, 4, 0, 0]} />
-        </BarChart>
+        {renderChart()}
       </ResponsiveContainer>
     </ChartCard>
   );
