@@ -56,11 +56,11 @@ export default function KpiDropdown({
         <>
           {/* Backdrop to close dropdown */}
           <div 
-            className="fixed inset-0 z-10" 
+            className="fixed inset-0 z-[100]" 
             onClick={() => setOpen(false)}
           />
           
-          <div className="absolute right-0 mt-1 w-48 rounded-lg border border-card-border bg-card/95 p-2 shadow-xl z-50 backdrop-blur-sm">
+          <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-card-border bg-card/95 p-2 shadow-xl z-[9999] backdrop-blur-sm">
             <div className="flex gap-1 mb-2">
               <button 
                 onClick={selectAll}
