@@ -245,18 +245,71 @@ export default function Dashboard() {
         </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <ProfitWidget
-            label="Monthly Revenue"
-            value={0.85}
-            mom={0.15}
-            data-testid="revenue-monthly"
-          />
-          <ProfitWidget
-            label="Annual Revenue"
-            value={0.74}
-            mom={0.08}
-            data-testid="revenue-annual"
-          />
+          {/* Monthly Revenue Chart */}
+          <div className="rounded-2xl bg-card/80 p-4 border border-card-border backdrop-blur-sm" data-testid="revenue-monthly">
+            <div className="text-sm text-muted-foreground mb-2">September Revenue</div>
+            <div className="text-lg font-semibold text-foreground mb-2">$425k / $500k</div>
+            
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Goal</span>
+                <span className="text-muted-foreground">$500k</span>
+              </div>
+              <div className="flex h-1.5 bg-muted/20 rounded-full overflow-hidden">
+                <div className="bg-primary h-full" style={{ width: '36%' }}></div>
+                <div className="bg-chart-2 h-full" style={{ width: '33%' }}></div>
+                <div className="bg-chart-3 h-full" style={{ width: '16%' }}></div>
+                <div className="bg-muted h-full" style={{ width: '15%' }}></div>
+              </div>
+              <div className="grid grid-cols-3 gap-1 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                  <span>Diego: $180k</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-chart-2 rounded-full"></div>
+                  <span>Brooke: $165k</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-chart-3 rounded-full"></div>
+                  <span>Sam: $80k</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Annual Revenue Chart */}
+          <div className="rounded-2xl bg-card/80 p-4 border border-card-border backdrop-blur-sm" data-testid="revenue-annual">
+            <div className="text-sm text-muted-foreground mb-2">2024 Revenue</div>
+            <div className="text-lg font-semibold text-foreground mb-2">$3.85M / $5.2M</div>
+            
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Goal</span>
+                <span className="text-muted-foreground">$5.2M</span>
+              </div>
+              <div className="flex h-1.5 bg-muted/20 rounded-full overflow-hidden">
+                <div className="bg-primary h-full" style={{ width: '32%' }}></div>
+                <div className="bg-chart-2 h-full" style={{ width: '28%' }}></div>
+                <div className="bg-chart-3 h-full" style={{ width: '14%' }}></div>
+                <div className="bg-muted h-full" style={{ width: '26%' }}></div>
+              </div>
+              <div className="grid grid-cols-3 gap-1 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                  <span>Diego: $1.65M</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-chart-2 rounded-full"></div>
+                  <span>Brooke: $1.45M</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-chart-3 rounded-full"></div>
+                  <span>Sam: $750k</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         <Thermometer
