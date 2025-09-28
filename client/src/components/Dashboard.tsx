@@ -138,7 +138,7 @@ export default function Dashboard() {
           <img 
             src={logoPath} 
             alt="Diamond Cut Landscape Logo" 
-            className="w-8 h-8 object-contain"
+            className="w-16 h-16 object-contain"
           />
           <div>
             <h1 className="text-2xl font-bold">Diamond Cut Landscape</h1>
