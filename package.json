@@ -14,7 +14,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:health": "tsx scripts/db-health.ts",
-    "db:seed": "tsx scripts/seed-database.ts"
+    "db:seed": "tsx scripts/seed-database.ts",
+    "production:setup": "tsx scripts/production-setup.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
