@@ -10,24 +10,24 @@
 1. Log into your Opalstack control panel
 2. Go to **Databases** → **PostgreSQL**
 3. Create a new database:
-   - **Database Name**: `kpi_dashboard`
-   - **Username**: Create or use existing user
-   - **Password**: Set a secure password
+   - **Database Name**: `dcl-dashboard`
+   - **Username**: `level7`
+   - **Password**: Your secure password
 
 ### Step 2: Configure Environment Variables
 Create a `.env` file on your server with:
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://username:password@localhost:5432/kpi_dashboard
-DB_NAME=kpi_dashboard
+DATABASE_URL=postgresql://level7:your_password@localhost:5432/dcl-dashboard
+DB_NAME=dcl-dashboard
 
 # Application Configuration
 NODE_ENV=production
 PORT=5000
 ```
 
-**Replace `username` and `password` with your actual PostgreSQL credentials.**
+**Replace `your_password` with your actual PostgreSQL password for the level7 user.**
 
 ### Step 3: Run Database Setup Commands
 

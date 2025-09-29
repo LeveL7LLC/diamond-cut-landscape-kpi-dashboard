@@ -8,7 +8,7 @@ dotenv.config();
 
 const {
   DATABASE_URL,
-  DB_NAME = 'kpi_dashboard'
+  DB_NAME = 'dcl-dashboard'
 } = process.env;
 
 if (!DATABASE_URL) {

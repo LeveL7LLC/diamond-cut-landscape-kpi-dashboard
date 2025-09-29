@@ -16,7 +16,7 @@ console.log('');
 if (!DATABASE_URL) {
   console.error('❌ DATABASE_URL environment variable is required!');
   console.log('Please set DATABASE_URL in your .env file:');
-  console.log('DATABASE_URL=postgresql://username:password@localhost:5432/kpi_dashboard');
+  console.log('DATABASE_URL=postgresql://level7:your_password@localhost:5432/dcl-dashboard');
   process.exit(1);
 }
 

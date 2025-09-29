@@ -23,8 +23,8 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: kpi_dashboard
-      POSTGRES_USER: postgres
+      POSTGRES_DB: dcl-dashboard
+      POSTGRES_USER: level7
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
@@ -38,7 +38,7 @@ volumes:
 #### Setup Database
 1. **Update .env file** with your PostgreSQL credentials:
    ```env
-   DATABASE_URL=postgresql://postgres:your_password@localhost:5432/kpi_dashboard
+   DATABASE_URL=postgresql://level7:your_password@localhost:5432/dcl-dashboard
    ```
 
 2. **Run setup script**:
@@ -83,11 +83,11 @@ Create a `.env` file in the project root:
 
 ```env
 # Database Configuration
-DATABASE_URL=postgresql://postgres:password@localhost:5432/kpi_dashboard
+DATABASE_URL=postgresql://level7:password@localhost:5432/dcl-dashboard
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=kpi_dashboard
-DB_USER=postgres
+DB_NAME=dcl-dashboard
+DB_USER=level7
 DB_PASSWORD=password
 
 # Application Configuration
@@ -111,7 +111,7 @@ SESSION_SECRET=your-super-secret-session-key-change-this-in-production
 
 ### Database Does Not Exist
 - Run `npm run db:setup` to create the database
-- Or manually create: `createdb kpi_dashboard`
+- Or manually create: `createdb dcl-dashboard`
 
 ### Schema Issues
 - Run `npm run db:push` to sync schema
