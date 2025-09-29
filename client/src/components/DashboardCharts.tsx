@@ -16,29 +16,17 @@ import {
   Legend
 } from "recharts";
 import { SalesDropdown } from './KpiDropdowns';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { 
+  useSalesGoals, 
+  useArAging, 
+  useMarginVariance, 
+  useServices, 
+  useWeeklyCapacity 
+} from '@/hooks/useApiData';
+import { MOCK_SALES_GOALS, MOCK_WEEKLY_CAPACITY, MOCK_AR_AGING, MOCK_MARGIN_VARIANCE, MOCK_SERVICE_MIX } from '@/lib/mockData';
 
 // Mock data for demonstrations //todo: remove mock functionality
-const salesGoalsData = [
-  { name: "Diego", actual: 185, goal: 200 },
-  { name: "Brooke", actual: 195, goal: 200 },
-  { name: "Sam", actual: 210, goal: 200 },
-  { name: "Lena", actual: 188, goal: 200 }
-];
-
-const arAgingData = [
-  { name: "0-30", value: 65, amount: 65000 },
-  { name: "31-60", value: 25, amount: 25000 },
-  { name: "61-90", value: 8, amount: 8000 },
-  { name: "90+", value: 2, amount: 2000 }
-];
-
-const capacityData = [
-  { week: "Wk1", booked: 380, available: 360 },
-  { week: "Wk2", booked: 340, available: 360 },
-  { week: "Wk3", booked: 420, available: 360 },
-  { week: "Wk4", booked: 300, available: 360 }
-];
 
 const COLORS = ['#22c55e', '#60a5fa', '#f59e0b', '#ef4444'];
 
@@ -66,15 +54,32 @@ interface SalesGoalsChartProps {
 }
 
 export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}) {
+  const { data: salesGoals } = useSalesGoals();
+  
+  const chartData = useMemo(() => {
+    if (!salesGoals || salesGoals.length === 0) {
+      return MOCK_SALES_GOALS; // fallback to centralized mock data
+    }
+    
+    return salesGoals.map((goal: any) => ({
+      name: goal.salesRep || new Date(goal.month).toLocaleDateString('en-US', { month: 'short' }),
+      actual: goal.actualAmount || 0,
+      goal: goal.goalAmount || 0
+    }));
+  }, [salesGoals]);
+
   return (
     <ChartCard 
       title="Sales Goals vs Actual ($)"
       rightSlot={
-        <SalesDropdown onSelectionChange={onSelectionChange} />
+        <SalesDropdown 
+          selectedValues={[]} 
+          onSelectionChange={onSelectionChange || (() => {})} 
+        />
       }
     >
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={salesGoalsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
           <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -84,6 +89,7 @@ export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}
               border: '1px solid hsl(var(--border))',
               borderRadius: '8px'
             }}
+            formatter={(value: any) => [`$${value.toLocaleString()}`, '']}
           />
           <Legend />
           <Bar dataKey="actual" fill="#22c55e" name="Actual" radius={[4, 4, 0, 0]} />
@@ -94,26 +100,15 @@ export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}
   );
 }
 
-// Additional mock data for new chart types
-const marginVarianceData = [
-  { month: "Jan", actual: 42, target: 45 },
-  { month: "Feb", actual: 38, target: 45 },
-  { month: "Mar", actual: 48, target: 45 },
-  { month: "Apr", actual: 52, target: 45 },
-  { month: "May", actual: 44, target: 45 },
-  { month: "Jun", actual: 46, target: 45 }
-];
 
-const serviceMixData = [
-  { name: "Hardscapes", value: 35, color: "#22c55e" },
-  { name: "Planting", value: 25, color: "#60a5fa" },
-  { name: "Irrigation", value: 20, color: "#f59e0b" },
-  { name: "Lighting", value: 12, color: "#a78bfa" },
-  { name: "Other", value: 8, color: "#ef4444" }
-];
 
 export function ARAgingChart() {
   const [activeChart, setActiveChart] = useState<'ar-aging' | 'margin-variance' | 'service-mix'>('ar-aging');
+  
+  // API data hooks
+  const { data: arAging } = useArAging();
+  const { data: marginVariance } = useMarginVariance();
+  const { data: services } = useServices();
 
   const chartButtons = [
     { id: 'ar-aging' as const, label: 'AR Aging' },
@@ -121,11 +116,49 @@ export function ARAgingChart() {
     { id: 'service-mix' as const, label: 'Service Mix' }
   ];
 
+  // Process API data for charts
+  const processedArAgingData = useMemo(() => {
+    if (!arAging || arAging.length === 0) {
+      return MOCK_AR_AGING; // fallback to centralized mock data
+    }
+    
+    return arAging.map((item: any) => ({
+      name: item.ageRange || item.name,
+      value: item.percentage || 0,
+      amount: item.amount || 0
+    }));
+  }, [arAging]);
+
+  const processedMarginVarianceData = useMemo(() => {
+    if (!marginVariance || marginVariance.length === 0) {
+      return MOCK_MARGIN_VARIANCE; // fallback to centralized mock data
+    }
+    
+    return marginVariance.map((item: any) => ({
+      month: new Date(item.month).toLocaleDateString('en-US', { month: 'short' }),
+      actual: item.actualMargin || 0,
+      target: item.targetMargin || 0
+    }));
+  }, [marginVariance]);
+
+  const processedServiceMixData = useMemo(() => {
+    if (!services || services.length === 0) {
+      return MOCK_SERVICE_MIX; // fallback to centralized mock data
+    }
+    
+    const colors = ['#22c55e', '#60a5fa', '#f59e0b', '#a78bfa', '#ef4444'];
+    return services.map((service: any, index: number) => ({
+      name: service.name,
+      value: service.percentage || Math.floor(Math.random() * 30) + 10,
+      color: colors[index % colors.length]
+    }));
+  }, [services]);
+
   const renderChart = () => {
     switch (activeChart) {
       case 'ar-aging':
         return (
-          <BarChart data={arAgingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <BarChart data={processedArAgingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
             <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -143,7 +176,7 @@ export function ARAgingChart() {
       
       case 'margin-variance':
         return (
-          <LineChart data={marginVarianceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <LineChart data={processedMarginVarianceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
             <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -165,7 +198,7 @@ export function ARAgingChart() {
         return (
           <PieChart margin={{ top: 25, right: 20, left: 20, bottom: 60 }}>
             <Pie
-              data={serviceMixData}
+              data={processedServiceMixData}
               dataKey="value"
               nameKey="name"
               cx="50%"
@@ -173,7 +206,7 @@ export function ARAgingChart() {
               outerRadius={60}
               innerRadius={20}
             >
-              {serviceMixData.map((entry, index) => (
+              {processedServiceMixData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
@@ -235,10 +268,24 @@ export function ARAgingChart() {
 }
 
 export function CapacityChart() {
+  const { data: weeklyCapacity } = useWeeklyCapacity();
+
+  const processedCapacityData = useMemo(() => {
+    if (!weeklyCapacity || weeklyCapacity.length === 0) {
+      return MOCK_WEEKLY_CAPACITY; // fallback to centralized mock data
+    }
+    
+    return weeklyCapacity.map((item: any) => ({
+      week: new Date(item.week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      capacity: item.capacity || 0,
+      utilization: item.utilization || 0
+    }));
+  }, [weeklyCapacity]);
+
   return (
-    <ChartCard title="4-Week Capacity (hrs)">
+    <ChartCard title="Weekly Capacity">
       <ResponsiveContainer width="100%" height={200}>
-        <AreaChart data={capacityData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <AreaChart data={processedCapacityData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
           <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -248,25 +295,11 @@ export function CapacityChart() {
               border: '1px solid hsl(var(--border))',
               borderRadius: '8px'
             }}
+            formatter={(value: any) => [`${value} hrs`, '']}
           />
-          <Area 
-            type="monotone" 
-            dataKey="booked" 
-            stackId="1"
-            stroke="#22c55e" 
-            fill="#22c55e" 
-            fillOpacity={0.6}
-            name="Booked"
-          />
-          <Area 
-            type="monotone" 
-            dataKey="available" 
-            stackId="2"
-            stroke="#60a5fa" 
-            fill="#60a5fa" 
-            fillOpacity={0.3}
-            name="Available"
-          />
+          <Legend />
+          <Area type="monotone" dataKey="capacity" stroke="#22c55e" fill="#22c55e" fillOpacity={0.3} name="Capacity" />
+          <Area type="monotone" dataKey="utilization" stroke="#60a5fa" fill="#60a5fa" fillOpacity={0.5} name="Utilization" />
         </AreaChart>
       </ResponsiveContainer>
     </ChartCard>

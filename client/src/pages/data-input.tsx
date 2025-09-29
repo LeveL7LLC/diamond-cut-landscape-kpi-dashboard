@@ -10,6 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/ui/date-picker";
+import { LeadSourceSelector, CSRSelector, SalesRepSelector, ServiceSelector } from "@/components/ui/entity-selectors";
 import { 
   Plus, Users, Target, TrendingUp, DollarSign, 
   FileText, BarChart3, Calendar, Database, Menu, X
@@ -510,7 +512,12 @@ export default function DataInput() {
                       <FormItem>
                         <FormLabel>Date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-leads-date" />
+                          <DatePicker 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select date"
+                            data-testid="input-leads-date"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -521,9 +528,14 @@ export default function DataInput() {
                     name="leadSourceId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Lead Source ID</FormLabel>
+                        <FormLabel>Lead Source</FormLabel>
                         <FormControl>
-                          <Input placeholder="Lead Source UUID" {...field} data-testid="input-leads-source" />
+                          <LeadSourceSelector 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select lead source"
+                            data-testid="input-leads-source"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -567,7 +579,12 @@ export default function DataInput() {
                       <FormItem>
                         <FormLabel>Date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-bookings-date" />
+                          <DatePicker 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select date"
+                            data-testid="input-bookings-date"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -578,9 +595,14 @@ export default function DataInput() {
                     name="csrId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>CSR ID</FormLabel>
+                        <FormLabel>CSR</FormLabel>
                         <FormControl>
-                          <Input placeholder="CSR UUID" {...field} data-testid="input-bookings-csr" />
+                          <CSRSelector 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select CSR"
+                            data-testid="input-bookings-csr"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -643,7 +665,12 @@ export default function DataInput() {
                       <FormItem>
                         <FormLabel>Date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-closes-date" />
+                          <DatePicker 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select date"
+                            data-testid="input-closes-date"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -654,9 +681,14 @@ export default function DataInput() {
                     name="salesRepId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sales Rep ID</FormLabel>
+                        <FormLabel>Sales Rep</FormLabel>
                         <FormControl>
-                          <Input placeholder="Sales Rep UUID" {...field} data-testid="input-closes-sales-rep" />
+                          <SalesRepSelector 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select sales rep"
+                            data-testid="input-closes-sales-rep"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -719,7 +751,12 @@ export default function DataInput() {
                       <FormItem>
                         <FormLabel>Date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-contracts-date" />
+                          <DatePicker 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select date"
+                            data-testid="input-contracts-date"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -730,9 +767,14 @@ export default function DataInput() {
                     name="serviceId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Service ID</FormLabel>
+                        <FormLabel>Service</FormLabel>
                         <FormControl>
-                          <Input placeholder="Service UUID" {...field} data-testid="input-contracts-service" />
+                          <ServiceSelector 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select service"
+                            data-testid="input-contracts-service"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -872,7 +914,12 @@ export default function DataInput() {
                       <FormItem>
                         <FormLabel>Month</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-monthly-finance-month" />
+                          <DatePicker 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select month"
+                            data-testid="input-monthly-finance-month"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -951,7 +998,12 @@ export default function DataInput() {
                       <FormItem>
                         <FormLabel>As Of Date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-ar-aging-date" />
+                          <DatePicker 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select as of date"
+                            data-testid="input-ar-aging-date"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1048,7 +1100,12 @@ export default function DataInput() {
                       <FormItem>
                         <FormLabel>Date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-margin-variance-date" />
+                          <DatePicker 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select date"
+                            data-testid="input-margin-variance-date"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1108,9 +1165,14 @@ export default function DataInput() {
                     name="serviceId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Service ID (Optional)</FormLabel>
+                        <FormLabel>Service (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Service UUID" {...field} data-testid="input-margin-variance-service" />
+                          <ServiceSelector 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Select service (optional)"
+                            data-testid="input-margin-variance-service"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1259,7 +1321,12 @@ export default function DataInput() {
                         <FormItem>
                           <FormLabel>Date</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} data-testid="input-concerns-date" />
+                            <DatePicker 
+                              value={field.value} 
+                              onChange={field.onChange}
+                              placeholder="Select date"
+                              data-testid="input-concerns-date"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1302,9 +1369,14 @@ export default function DataInput() {
                       name="serviceId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Service ID (Optional)</FormLabel>
+                          <FormLabel>Service (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="Service UUID" {...field} data-testid="input-concerns-service" />
+                            <ServiceSelector 
+                              value={field.value} 
+                              onChange={field.onChange}
+                              placeholder="Select service (optional)"
+                              data-testid="input-concerns-service"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1329,7 +1401,12 @@ export default function DataInput() {
                         <FormItem>
                           <FormLabel>Month</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} data-testid="input-goals-month" />
+                            <DatePicker 
+                              value={field.value} 
+                              onChange={field.onChange}
+                              placeholder="Select month"
+                              data-testid="input-goals-month"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1340,9 +1417,14 @@ export default function DataInput() {
                       name="salesRepId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sales Rep ID</FormLabel>
+                          <FormLabel>Sales Rep</FormLabel>
                           <FormControl>
-                            <Input placeholder="Sales Rep UUID" {...field} data-testid="input-goals-sales-rep" />
+                            <SalesRepSelector 
+                              value={field.value} 
+                              onChange={field.onChange}
+                              placeholder="Select sales rep"
+                              data-testid="input-goals-sales-rep"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1411,7 +1493,12 @@ export default function DataInput() {
                         <FormItem>
                           <FormLabel>Week Of</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} data-testid="input-capacity-week" />
+                            <DatePicker 
+                              value={field.value} 
+                              onChange={field.onChange}
+                              placeholder="Select week start date"
+                              data-testid="input-capacity-week"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1481,7 +1568,12 @@ export default function DataInput() {
                               <FormItem>
                                 <FormLabel>Month</FormLabel>
                                 <FormControl>
-                                  <Input type="date" {...field} data-testid="input-monthly-revenue-month" />
+                                  <DatePicker 
+                                    value={field.value} 
+                                    onChange={field.onChange}
+                                    placeholder="Select month"
+                                    data-testid="input-monthly-revenue-month"
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1492,9 +1584,14 @@ export default function DataInput() {
                             name="salesRepId"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Sales Rep ID</FormLabel>
+                                <FormLabel>Sales Rep</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Sales Rep UUID" {...field} data-testid="input-monthly-revenue-rep" />
+                                  <SalesRepSelector 
+                                    value={field.value} 
+                                    onChange={field.onChange}
+                                    placeholder="Select sales rep"
+                                    data-testid="input-monthly-revenue-rep"
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1556,9 +1653,14 @@ export default function DataInput() {
                             name="salesRepId"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Sales Rep ID</FormLabel>
+                                <FormLabel>Sales Rep</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Sales Rep UUID" {...field} data-testid="input-annual-revenue-rep" />
+                                  <SalesRepSelector 
+                                    value={field.value} 
+                                    onChange={field.onChange}
+                                    placeholder="Select sales rep"
+                                    data-testid="input-annual-revenue-rep"
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

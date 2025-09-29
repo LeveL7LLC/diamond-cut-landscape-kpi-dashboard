@@ -362,6 +362,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(monthlyFinance);
   }));
 
+  app.post('/api/monthly-finance', asyncHandler(async (req: any, res: any) => {
+    const validatedData = validateRequestBody(insertMonthlyFinanceSchema, req.body);
+    const monthlyFinance = await storage.createMonthlyFinance(validatedData);
+    res.status(201).json(monthlyFinance);
+  }));
+
   // AR Aging
   app.get('/api/ar-aging', asyncHandler(async (req: any, res: any) => {
     const arAging = await storage.getArAging();

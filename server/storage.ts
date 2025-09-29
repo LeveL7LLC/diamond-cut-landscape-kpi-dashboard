@@ -408,11 +408,25 @@ export class DatabaseStorage implements IStorage {
   // Continue with remaining methods...
   // (I'll implement the rest in the next part to keep this manageable)
   
-  // Placeholder implementations for remaining methods
-  async getMonthlyFinance(): Promise<MonthlyFinance[]> { return []; }
-  async createMonthlyFinance(monthlyFinance: InsertMonthlyFinance): Promise<MonthlyFinance> { throw new Error('Not implemented'); }
-  async updateMonthlyFinance(id: string, monthlyFinance: Partial<InsertMonthlyFinance>): Promise<MonthlyFinance | undefined> { return undefined; }
-  async deleteMonthlyFinance(id: string): Promise<boolean> { return false; }
+  // Monthly Finance operations
+  async getMonthlyFinance(): Promise<MonthlyFinance[]> {
+    return await db.select().from(monthlyFinance).orderBy(desc(monthlyFinance.month));
+  }
+
+  async createMonthlyFinance(insertMonthlyFinance: InsertMonthlyFinance): Promise<MonthlyFinance> {
+    const [finance] = await db.insert(monthlyFinance).values(insertMonthlyFinance).returning();
+    return finance;
+  }
+
+  async updateMonthlyFinance(id: string, updateData: Partial<InsertMonthlyFinance>): Promise<MonthlyFinance | undefined> {
+    const [finance] = await db.update(monthlyFinance).set(updateData).where(eq(monthlyFinance.id, id)).returning();
+    return finance || undefined;
+  }
+
+  async deleteMonthlyFinance(id: string): Promise<boolean> {
+    const result = await db.delete(monthlyFinance).where(eq(monthlyFinance.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
 
   async getArAging(): Promise<ArAging[]> { return []; }
   async getLatestArAging(): Promise<ArAging | undefined> { return undefined; }

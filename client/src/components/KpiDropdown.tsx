@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 
 interface DropdownOption {
@@ -23,45 +24,61 @@ export default function KpiDropdown({
   "data-testid": testId 
 }: KpiDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const safeOptions = options || [];
+  const safeSelected = selected || [];
 
   const toggle = (value: string) => {
-    const has = selected.includes(value);
-    const next = has ? selected.filter(s => s !== value) : [...selected, value];
+    const has = safeSelected.includes(value);
+    const next = has ? safeSelected.filter(s => s !== value) : [...safeSelected, value];
     onSelectionChange(next);
   };
 
   const selectAll = () => {
-    onSelectionChange(options.map(opt => opt.value));
+    if (options && options.length > 0) {
+      onSelectionChange(options.map(opt => opt.value));
+    }
   };
 
   const clearAll = () => {
     onSelectionChange([]);
   };
 
-  const allSelected = selected.length === options.length;
-  const displayText = allSelected ? placeholder : `${selected.length}/${options.length}`;
+  const allSelected = safeSelected.length === safeOptions.length;
+  const displayText = allSelected ? placeholder : `${safeSelected.length}/${safeOptions.length}`;
 
-  return (
-    <div className="relative" data-testid={testId}>
-      <button 
-        onClick={() => setOpen(o => !o)} 
-        className="text-xs border border-border px-2 py-1 rounded-md bg-muted/20 hover:bg-muted/40 transition-colors flex items-center gap-1"
-        data-testid="button-kpi-dropdown"
-      >
-        {displayText}
-        <ChevronDown size={10} />
-      </button>
+  // Calculate dropdown position when opened
+  useEffect(() => {
+    if (open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4, // 4px gap
+        left: rect.right + window.scrollX - 192, // 192px is w-48 (12rem * 16px)
+      });
+    }
+  }, [open]);
+
+  const dropdownContent = open ? (
+    <>
+      {/* Backdrop to close dropdown */}
+      <div 
+        className="fixed inset-0 z-[100]" 
+        onClick={() => setOpen(false)}
+      />
       
-      {open && (
-        <>
-          {/* Backdrop to close dropdown */}
-          <div 
-            className="fixed inset-0 z-[100]" 
-            onClick={() => setOpen(false)}
-          />
-          
-          <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-card-border bg-card/95 p-2 shadow-xl z-[9999] backdrop-blur-sm">
-            <div className="flex gap-1 mb-2">
+      <div 
+        className="fixed w-48 rounded-lg p-2 shadow-xl z-[9999]"
+        style={{
+          top: `${dropdownPosition.top}px`,
+          left: `${dropdownPosition.left}px`,
+          backgroundColor: 'hsl(220 9% 9%)',
+          border: '1px solid hsl(220 9% 18%)',
+          color: 'hsl(0 0% 95%)',
+        }}
+      >
+        <div className="flex gap-1 mb-2">
               <button 
                 onClick={selectAll}
                 className="px-1.5 py-0.5 rounded text-[10px] border border-border text-muted-foreground hover:border-muted-foreground"
@@ -79,8 +96,8 @@ export default function KpiDropdown({
             </div>
 
             <div className="space-y-0.5">
-              {options.map((option) => {
-                const isSelected = selected.includes(option.value);
+              {safeOptions.map((option) => {
+                const isSelected = safeSelected.includes(option.value);
                 return (
                   <button
                     key={option.value}
@@ -104,7 +121,21 @@ export default function KpiDropdown({
             </div>
           </div>
         </>
-      )}
+      ) : null;
+
+  return (
+    <div className="relative" data-testid={testId}>
+      <button 
+        ref={buttonRef}
+        onClick={() => setOpen(o => !o)} 
+        className="text-xs border border-border px-2 py-1 rounded-md bg-muted/20 hover:bg-muted/40 transition-colors flex items-center gap-1"
+        data-testid="button-kpi-dropdown"
+      >
+        {displayText}
+        <ChevronDown size={10} />
+      </button>
+      
+      {dropdownContent && createPortal(dropdownContent, document.body)}
     </div>
   );
 }

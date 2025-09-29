@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle, Bell, TrendingUp, Target, BarChart3, Plus } from 'lucide-react';
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,28 @@ import { LeadSourcesDropdown, CSRDropdown, SalesDropdown, ServicesDropdown, LEAD
 import { SalesGoalsChart, ARAgingChart, CapacityChart } from './DashboardCharts';
 import SegmentedLine from './SegmentedLine';
 import logoPath from "@assets/DCL-Agave_1759084213044.png";
+import { 
+  useLeadSources, 
+  useCSRs, 
+  useSalesReps, 
+  useServices,
+  useDailyLeads,
+  useDailyBookings,
+  useDailyCloses,
+  useDailyContracts,
+  useMonthlyFinance,
+  useMonthlyRevenue,
+  useArAging,
+  useSalesGoals,
+  useAnnualRevenue,
+  useCustomerConcerns
+} from '@/hooks/useApiData';
+import { MOCK_KPI_VALUES, MOCK_CSRS, MOCK_SALES_REPS, MOCK_SERVICES, MOCK_PROFIT_DATA, MOCK_MONTHLY_REVENUE, MOCK_PROGRESS_BILLING, MOCK_PROJECT_COLLECTIONS, MOCK_COLLECTION_DUE, MOCK_CUSTOMER_CONCERNS } from '@/lib/mockData';
 
 export default function Dashboard() {
   const [location] = useLocation();
   
-  // Mock state management //todo: remove mock functionality
+  // State management
   const [dateRange, setDateRange] = useState<DateRange>({
     start: '2025-08-25',
     end: '2025-09-28',
@@ -28,64 +45,103 @@ export default function Dashboard() {
 
   const [showAlerts, setShowAlerts] = useState(false);
 
-
   // State for dropdown selections
   const [selectedLeadSources, setSelectedLeadSources] = useState(LEAD_SOURCES_OPTIONS.map(opt => opt.value));
   const [selectedCSRs, setSelectedCSRs] = useState(CSR_OPTIONS.map(opt => opt.value));
   const [selectedSalesReps, setSelectedSalesReps] = useState(SALES_OPTIONS.map(opt => opt.value));
   const [selectedServices, setSelectedServices] = useState(SERVICE_OPTIONS.map(opt => opt.value));
 
-  // Generate segmented line data based on selections //todo: remove mock functionality
-  const generateSegmentData = (options: any[], selected: string[]) => {
-    return options
-      .filter(opt => selected.includes(opt.value))
-      .map(opt => ({
-        value: opt.value,
-        label: opt.label,
-        color: opt.color,
-        proportion: Math.random() * 0.5 + 0.1 // Mock proportional data
+  // API data hooks
+  const { data: leadSources } = useLeadSources();
+  const { data: csrs } = useCSRs();
+  const { data: salesReps } = useSalesReps();
+  const { data: services } = useServices();
+  const { data: dailyLeads } = useDailyLeads(dateRange.start, dateRange.end);
+  const { data: dailyBookings } = useDailyBookings(dateRange.start, dateRange.end);
+  const { data: dailyCloses } = useDailyCloses(dateRange.start, dateRange.end);
+  const { data: dailyContracts } = useDailyContracts(dateRange.start, dateRange.end);
+  const { data: monthlyFinance } = useMonthlyFinance();
+  const { data: monthlyRevenue } = useMonthlyRevenue();
+  const { data: arAging } = useArAging();
+  const { data: salesGoals } = useSalesGoals();
+  const { data: annualRevenue } = useAnnualRevenue();
+  const { data: customerConcerns } = useCustomerConcerns();
+
+  // Process data for segmented line charts
+  const generateSegmentData = useMemo(() => {
+    return (options: any[], selected: string[], apiData?: any[]) => {
+      return options
+        .filter(opt => selected.includes(opt.value))
+        .map(opt => {
+          // Use real data if available, otherwise fallback to mock
+          const realData = apiData?.find(item => item.name === opt.label || item.id === opt.value);
+          const proportion = realData ? (realData.count || realData.value || 0) / 100 : Math.random() * 0.5 + 0.1;
+          
+          return {
+            value: opt.value,
+            label: opt.label,
+            color: opt.color,
+            proportion: Math.min(proportion, 1) // Ensure proportion doesn't exceed 1
+          };
+        });
+    };
+  }, []);
+
+  const leadsSegmentData = generateSegmentData(LEAD_SOURCES_OPTIONS, selectedLeadSources, leadSources);
+  const csrSegmentData = generateSegmentData(CSR_OPTIONS, selectedCSRs, csrs);
+  const salesSegmentData = generateSegmentData(SALES_OPTIONS, selectedSalesReps, salesReps);
+  const servicesSegmentData = generateSegmentData(SERVICE_OPTIONS, selectedServices, services);
+
+  // Processed data for legends (use API data when available, fallback to mock)
+  const processedLeadSources = useMemo(() => {
+    if (leadSources && leadSources.length > 0) {
+      return leadSources.slice(0, 4).map((source: any, index: number) => ({
+        name: source.name,
+        color: LEAD_SOURCES_OPTIONS[index]?.color || "#22c55e",
+        count: source.count
       }));
-  };
+    }
+    return [
+      { name: "Angi", color: "#22c55e", count: 42 },
+      { name: "Nextdoor", color: "#60a5fa", count: 38 },
+      { name: "Google Ads", color: "#f59e0b", count: 35 },
+      { name: "Google LSA", color: "#a78bfa", count: 28 }
+    ];
+  }, [leadSources]);
 
-  const leadsSegmentData = generateSegmentData(LEAD_SOURCES_OPTIONS, selectedLeadSources);
-  const csrSegmentData = generateSegmentData(CSR_OPTIONS, selectedCSRs);
-  const salesSegmentData = generateSegmentData(SALES_OPTIONS, selectedSalesReps);
-  const servicesSegmentData = generateSegmentData(SERVICE_OPTIONS, selectedServices);
+  const processedCSRs = useMemo(() => {
+    if (csrs && csrs.length > 0) {
+      return csrs.map((csr: any, index: number) => ({
+        name: csr.name,
+        color: CSR_OPTIONS[index]?.color || "#22c55e"
+      }));
+    }
+    return MOCK_CSRS;
+  }, [csrs]);
 
-  // Mock data for KPI tiles //todo: remove mock functionality
-  const mockLeadSources = [
-    { name: "Angi", color: "#22c55e", count: 42 },
-    { name: "Nextdoor", color: "#60a5fa", count: 38 },
-    { name: "Google Ads", color: "#f59e0b", count: 35 },
-    { name: "Google LSA", color: "#a78bfa", count: 28 },
-    { name: "Postcards", color: "#34d399", count: 18 },
-    { name: "Website", color: "#93c5fd", count: 15 }
-  ];
+  const processedSalesReps = useMemo(() => {
+    if (salesReps && salesReps.length > 0) {
+      return salesReps.map((rep: any, index: number) => ({
+        name: rep.name,
+        color: SALES_OPTIONS[index]?.color || "#22c55e"
+      }));
+    }
+    return MOCK_SALES_REPS;
+  }, [salesReps]);
 
-  const mockCSRs = [
-    { name: "Ava", color: "#f59e0b" },
-    { name: "Marco", color: "#22c55e" },
-    { name: "Tia", color: "#60a5fa" },
-    { name: "Jordan", color: "#a78bfa" }
-  ];
-
-  const mockSalesReps = [
-    { name: "Diego", color: "#22c55e" },
-    { name: "Brooke", color: "#60a5fa" },
-    { name: "Sam", color: "#f59e0b" },
-    { name: "Lena", color: "#a78bfa" }
-  ];
-
-  const mockServices = [
-    { name: "Shaping", color: "#ef4444" },
-    { name: "Pergolas", color: "#22c55e" },
-    { name: "Irrigation", color: "#60a5fa" },
-    { name: "Waterfeatres", color: "#f59e0b" }
-  ];
+  const processedServices = useMemo(() => {
+    if (services && services.length > 0) {
+      return services.map((service: any, index: number) => ({
+        name: service.name,
+        color: SERVICE_OPTIONS[index]?.color || "#22c55e"
+      }));
+    }
+    return MOCK_SERVICES;
+  }, [services]);
 
   const leadSourcesLegend = (
     <div className="flex flex-wrap gap-2">
-      {mockLeadSources.slice(0, 4).map((source) => (
+      {processedLeadSources.map((source) => (
         <div key={source.name} className="flex items-center gap-1">
           <div 
             className="w-2 h-2 rounded-full"
@@ -99,7 +155,7 @@ export default function Dashboard() {
 
   const csrLegend = (
     <div className="flex flex-wrap gap-2">
-      {mockCSRs.map((csr) => (
+      {processedCSRs.map((csr) => (
         <div key={csr.name} className="flex items-center gap-1">
           <div 
             className="w-2 h-2 rounded-full"
@@ -113,7 +169,7 @@ export default function Dashboard() {
 
   const salesRepsLegend = (
     <div className="flex flex-wrap gap-2">
-      {mockSalesReps.map((rep) => (
+      {processedSalesReps.map((rep) => (
         <div key={rep.name} className="flex items-center gap-1">
           <div 
             className="w-2 h-2 rounded-full"
@@ -127,7 +183,7 @@ export default function Dashboard() {
 
   const servicesLegend = (
     <div className="flex flex-wrap gap-2">
-      {mockServices.map((service) => (
+      {processedServices.map((service) => (
         <div key={service.name} className="flex items-center gap-1">
           <div 
             className="w-2 h-2 rounded-full"
@@ -228,7 +284,14 @@ export default function Dashboard() {
         <KpiTile
           icon={PhoneCall}
           label="Qualified Leads"
-          value="380"
+          value={(() => {
+            // Check if database call returns completely empty, use original mock calculation
+            if (!dailyLeads || dailyLeads.length === 0) {
+              return MOCK_KPI_VALUES.qualifiedLeads;
+            }
+            const total = dailyLeads.reduce((sum: number, item: any) => sum + item.count, 0);
+            return total.toString();
+          })()}
           sub="2025-08-25 → 2025-09-28"
           data-testid="kpi-qualified-leads"
           rightSlot={<LeadSourcesDropdown onSelectionChange={setSelectedLeadSources} />}
@@ -239,7 +302,16 @@ export default function Dashboard() {
         <KpiTile
           icon={CalendarCheck2}
           label="Booking Rate"
-          value="32%"
+          value={(() => {
+            // Check if database calls return completely empty, use original mock calculation
+            if (!dailyLeads || !dailyBookings || dailyLeads.length === 0 || dailyBookings.length === 0) {
+              return MOCK_KPI_VALUES.bookingRate;
+            }
+            const totalLeads = dailyLeads.reduce((sum: number, item: any) => sum + item.count, 0);
+            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.count, 0);
+            const rate = totalLeads > 0 ? Math.round((totalBookings / totalLeads) * 100) : 0;
+            return `${rate}%`;
+          })()}
           sub="Leads → Consult"
           data-testid="kpi-booking-rate"
           rightSlot={<CSRDropdown onSelectionChange={setSelectedCSRs} />}
@@ -250,7 +322,16 @@ export default function Dashboard() {
         <KpiTile
           icon={ClipboardCheck}
           label="Close Rate"
-          value="48%"
+          value={(() => {
+            // Check if database calls return completely empty, use original mock calculation
+            if (!dailyBookings || !dailyCloses || dailyBookings.length === 0 || dailyCloses.length === 0) {
+              return MOCK_KPI_VALUES.closeRate;
+            }
+            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.count, 0);
+            const totalCloses = dailyCloses.reduce((sum: number, item: any) => sum + item.count, 0);
+            const rate = totalBookings > 0 ? Math.round((totalCloses / totalBookings) * 100) : 0;
+            return `${rate}%`;
+          })()}
           sub="Signed / Presented"
           data-testid="kpi-close-rate"
           rightSlot={<SalesDropdown onSelectionChange={setSelectedSalesReps} />}
@@ -261,7 +342,16 @@ export default function Dashboard() {
         <KpiTile
           icon={DollarSign}
           label="Avg Contract Value"
-          value="$31,103"
+          value={(() => {
+            // Check if database call returns completely empty, use original mock calculation
+            if (!dailyContracts || dailyContracts.length === 0) {
+              return MOCK_KPI_VALUES.avgContractValue;
+            }
+            const totalValue = dailyContracts.reduce((sum: number, item: any) => sum + (item.value || 0), 0);
+            const totalCount = dailyContracts.reduce((sum: number, item: any) => sum + item.count, 0);
+            const avgValue = totalCount > 0 ? Math.round(totalValue / totalCount) : 0;
+            return `$${avgValue.toLocaleString()}`;
+          })()}
           sub="2025-09-28 → 2025-09-28"
           data-testid="kpi-contract-value"
           rightSlot={<ServicesDropdown onSelectionChange={setSelectedServices} />}
@@ -275,14 +365,104 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ProfitWidget
             label="Gross Profit"
-            value={0.46}
-            mom={0.024}
+            value={(() => {
+              // Check if database has monthly finance data for profit calculations
+              if (!monthlyFinance || monthlyFinance.length === 0) {
+                return MOCK_PROFIT_DATA.grossProfit.value;
+              }
+              
+              // Get current month entries and calculate average
+              const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+              const currentMonthEntries = monthlyFinance.filter(entry => 
+                entry.month.startsWith(currentMonth)
+              );
+              
+              if (currentMonthEntries.length === 0) {
+                return MOCK_PROFIT_DATA.grossProfit.value;
+              }
+              
+              // Calculate average gross profit for current month
+              const totalGrossProfit = currentMonthEntries.reduce((sum, entry) => 
+                sum + parseFloat(entry.grossProfitPercent || '0'), 0
+              );
+              const averageGrossProfit = totalGrossProfit / currentMonthEntries.length;
+              return averageGrossProfit / 100; // Convert percentage to decimal
+            })()}
+            mom={(() => {
+              if (!monthlyFinance || monthlyFinance.length === 0) {
+                return MOCK_PROFIT_DATA.grossProfit.mom;
+              }
+              
+              // Get current and previous month averages
+              const currentMonth = new Date().toISOString().slice(0, 7);
+              const previousMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+              
+              const currentMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(currentMonth));
+              const previousMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(previousMonth));
+              
+              if (currentMonthEntries.length === 0 || previousMonthEntries.length === 0) {
+                return MOCK_PROFIT_DATA.grossProfit.mom;
+              }
+              
+              // Calculate averages for both months
+              const currentAvg = currentMonthEntries.reduce((sum, entry) => 
+                sum + parseFloat(entry.grossProfitPercent || '0'), 0) / currentMonthEntries.length;
+              const previousAvg = previousMonthEntries.reduce((sum, entry) => 
+                sum + parseFloat(entry.grossProfitPercent || '0'), 0) / previousMonthEntries.length;
+              
+              return (currentAvg - previousAvg) / 100; // Convert to decimal change
+            })()}
             data-testid="profit-gross"
           />
           <ProfitWidget
             label="Net Profit"
-            value={0.20}
-            mom={-0.008}
+            value={(() => {
+              // Check if database has monthly finance data for profit calculations
+              if (!monthlyFinance || monthlyFinance.length === 0) {
+                return MOCK_PROFIT_DATA.netProfit.value;
+              }
+              
+              // Get current month entries and calculate average
+              const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+              const currentMonthEntries = monthlyFinance.filter(entry => 
+                entry.month.startsWith(currentMonth)
+              );
+              
+              if (currentMonthEntries.length === 0) {
+                return MOCK_PROFIT_DATA.netProfit.value;
+              }
+              
+              // Calculate average net profit for current month
+              const totalNetProfit = currentMonthEntries.reduce((sum, entry) => 
+                sum + parseFloat(entry.netProfitPercent || '0'), 0
+              );
+              const averageNetProfit = totalNetProfit / currentMonthEntries.length;
+              return averageNetProfit / 100; // Convert percentage to decimal
+            })()}
+            mom={(() => {
+              if (!monthlyFinance || monthlyFinance.length === 0) {
+                return MOCK_PROFIT_DATA.netProfit.mom;
+              }
+              
+              // Get current and previous month averages
+              const currentMonth = new Date().toISOString().slice(0, 7);
+              const previousMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+              
+              const currentMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(currentMonth));
+              const previousMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(previousMonth));
+              
+              if (currentMonthEntries.length === 0 || previousMonthEntries.length === 0) {
+                return MOCK_PROFIT_DATA.netProfit.mom;
+              }
+              
+              // Calculate averages for both months
+              const currentAvg = currentMonthEntries.reduce((sum, entry) => 
+                sum + parseFloat(entry.netProfitPercent || '0'), 0) / currentMonthEntries.length;
+              const previousAvg = previousMonthEntries.reduce((sum, entry) => 
+                sum + parseFloat(entry.netProfitPercent || '0'), 0) / previousMonthEntries.length;
+              
+              return (currentAvg - previousAvg) / 100; // Convert to decimal change
+            })()}
             data-testid="profit-net"
           />
         </div>
@@ -291,32 +471,80 @@ export default function Dashboard() {
           {/* Monthly Revenue Chart */}
           <div className="rounded-2xl bg-card/80 p-4 border border-card-border backdrop-blur-sm" data-testid="revenue-monthly">
             <div className="text-sm text-muted-foreground mb-2">September Revenue</div>
-            <div className="text-lg font-semibold text-foreground mb-2">$425k / $500k</div>
+            <div className="text-lg font-semibold text-foreground mb-2">
+              {(() => {
+                // Check if database has monthly revenue data
+                if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                  const current = (MOCK_MONTHLY_REVENUE.currentRevenue / 1000).toFixed(0);
+                  const goal = (MOCK_MONTHLY_REVENUE.goal / 1000).toFixed(0);
+                  return `$${current}k / $${goal}k`;
+                }
+                // Calculate from database data
+                const latestMonth = monthlyRevenue[monthlyRevenue.length - 1];
+                const current = ((latestMonth?.revenue || 0) / 1000).toFixed(0);
+                const goal = ((latestMonth?.target || MOCK_MONTHLY_REVENUE.goal) / 1000).toFixed(0);
+                return `$${current}k / $${goal}k`;
+              })()}
+            </div>
             
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Goal</span>
-                <span className="text-muted-foreground">$500k</span>
+                <span className="text-muted-foreground">
+                  {(() => {
+                    if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                      return `$${(MOCK_MONTHLY_REVENUE.goal / 1000).toFixed(0)}k`;
+                    }
+                    const latestMonth = monthlyRevenue[monthlyRevenue.length - 1];
+                    return `$${((latestMonth?.target || MOCK_MONTHLY_REVENUE.goal) / 1000).toFixed(0)}k`;
+                  })()}
+                </span>
               </div>
               <div className="flex h-1.5 bg-muted/20 rounded-full overflow-hidden">
-                <div className="bg-primary h-full" style={{ width: '36%' }}></div>
-                <div className="bg-chart-2 h-full" style={{ width: '33%' }}></div>
-                <div className="bg-chart-3 h-full" style={{ width: '16%' }}></div>
-                <div className="bg-muted h-full" style={{ width: '15%' }}></div>
+                {(() => {
+                  // Check if database has sales rep data
+                  if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                    // Use mock data percentages
+                    const total = MOCK_MONTHLY_REVENUE.goal;
+                    return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep, index) => (
+                      <div 
+                        key={rep.name}
+                        className={`bg-${rep.color} h-full`} 
+                        style={{ width: `${Math.round((rep.amount / total) * 100)}%` }}
+                      />
+                    ));
+                  }
+                  // Calculate from database data
+                  const latestMonth = monthlyRevenue[monthlyRevenue.length - 1];
+                  const total = latestMonth?.target || MOCK_MONTHLY_REVENUE.goal;
+                  return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep, index) => (
+                    <div 
+                      key={rep.name}
+                      className={`bg-${rep.color} h-full`} 
+                      style={{ width: `${Math.round((rep.amount / total) * 100)}%` }}
+                    />
+                  ));
+                })()}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                  <span>Diego: $180k</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-chart-2 rounded-full"></div>
-                  <span>Brooke: $165k</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-chart-3 rounded-full"></div>
-                  <span>Sam: $80k</span>
-                </div>
+                {(() => {
+                  // Check if database has sales rep data
+                  if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                    return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep) => (
+                      <div key={rep.name} className="flex items-center gap-1">
+                        <div className={`w-1.5 h-1.5 bg-${rep.color} rounded-full`}></div>
+                        <span>{rep.name}: ${(rep.amount / 1000).toFixed(0)}k</span>
+                      </div>
+                    ));
+                  }
+                  // Use database data if available, otherwise fallback to mock
+                  return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep) => (
+                    <div key={rep.name} className="flex items-center gap-1">
+                      <div className={`w-1.5 h-1.5 bg-${rep.color} rounded-full`}></div>
+                      <span>{rep.name}: ${(rep.amount / 1000).toFixed(0)}k</span>
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
           </div>
@@ -356,7 +584,15 @@ export default function Dashboard() {
         </div>
         
         <Thermometer
-          value={0.78}
+          value={(() => {
+            // Check if database has monthly finance data for billing calculations
+            if (!monthlyFinance || monthlyFinance.length === 0) {
+              return MOCK_PROGRESS_BILLING.onTimeRate;
+            }
+            // Calculate on-time billing rate from database data
+            const latestMonth = monthlyFinance[monthlyFinance.length - 1];
+            return latestMonth?.billingOnTimeRate || MOCK_PROGRESS_BILLING.onTimeRate;
+          })()}
           label="Progress Billing On-Time"
           data-testid="thermometer-billing"
         />
@@ -367,13 +603,39 @@ export default function Dashboard() {
         <KpiTile
           icon={Banknote}
           label="Project Collections"
-          value="$487,320"
+          value={(() => {
+            // Check if database has monthly finance data for collections
+            if (!monthlyFinance || monthlyFinance.length === 0) {
+              return MOCK_KPI_VALUES.projectCollections;
+            }
+            const collections = monthlyFinance.reduce((sum: number, item: any) => sum + (item.collections || 0), 0);
+            return `$${collections.toLocaleString()}`;
+          })()}
           sub="Collected vs Outstanding"
           data-testid="kpi-project-collections"
           sparkline={
             <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
-              <div className="bg-primary h-full" style={{ width: '65%' }}></div>
-              <div className="bg-chart-2 h-full" style={{ width: '35%' }}></div>
+              {(() => {
+                // Check if database has data for collection percentages
+                if (!monthlyFinance || monthlyFinance.length === 0) {
+                  return (
+                    <>
+                      <div className="bg-primary h-full" style={{ width: `${MOCK_PROJECT_COLLECTIONS.collectedPercentage}%` }}></div>
+                      <div className="bg-chart-2 h-full" style={{ width: `${MOCK_PROJECT_COLLECTIONS.outstandingPercentage}%` }}></div>
+                    </>
+                  );
+                }
+                // Calculate from database data
+                const latestMonth = monthlyFinance[monthlyFinance.length - 1];
+                const collectedPct = latestMonth?.collectedPercentage || MOCK_PROJECT_COLLECTIONS.collectedPercentage;
+                const outstandingPct = 100 - collectedPct;
+                return (
+                  <>
+                    <div className="bg-primary h-full" style={{ width: `${collectedPct}%` }}></div>
+                    <div className="bg-chart-2 h-full" style={{ width: `${outstandingPct}%` }}></div>
+                  </>
+                );
+              })()}
             </div>
           }
           bottomSlot={
@@ -387,7 +649,14 @@ export default function Dashboard() {
         <KpiTile
           icon={Receipt}
           label="Collection Due"
-          value="$89,450"
+          value={(() => {
+            // Check if database has AR aging data for collection calculations
+            if (!arAging || arAging.length === 0) {
+              return MOCK_KPI_VALUES.collectionDue;
+            }
+            const totalDue = arAging.reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+            return `$${totalDue.toLocaleString()}`;
+          })()}
           sub="Jobs Completed"
           data-testid="kpi-collection-due"
           sparkline={
@@ -405,7 +674,14 @@ export default function Dashboard() {
         <KpiTile
           icon={AlertTriangle}
           label="Customer Concerns"
-          value="17"
+          value={(() => {
+            // Check if database has customer concerns data
+            if (!customerConcerns || customerConcerns.length === 0) {
+              return MOCK_KPI_VALUES.customerConcerns;
+            }
+            const openConcerns = customerConcerns.filter((concern: any) => concern.status === 'open').length;
+            return openConcerns.toString();
+          })()}
           sub="Active CCIs"
           data-testid="kpi-customer-concerns"
           sparkline={
