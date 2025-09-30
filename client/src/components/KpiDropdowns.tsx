@@ -68,7 +68,7 @@ export function LeadSourcesDropdown({
     <KpiDropdown
       title="Lead Sources"
       options={options}
-      selectedValues={selectedValues}
+      selected={selectedValues}
       onSelectionChange={onSelectionChange}
     />
   );
@@ -99,7 +99,7 @@ export function CSRDropdown({
     <KpiDropdown
       title="CSR"
       options={options}
-      selectedValues={selectedValues}
+      selected={selectedValues}
       onSelectionChange={onSelectionChange}
     />
   );
@@ -130,7 +130,7 @@ export function SalesDropdown({
     <KpiDropdown
       title="Sales"
       options={options}
-      selectedValues={selectedValues}
+      selected={selectedValues}
       onSelectionChange={onSelectionChange}
     />
   );
@@ -161,7 +161,7 @@ export function ServicesDropdown({
     <KpiDropdown
       title="Services"
       options={options}
-      selectedValues={selectedValues}
+      selected={selectedValues}
       onSelectionChange={onSelectionChange}
     />
   );

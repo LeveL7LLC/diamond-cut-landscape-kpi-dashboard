@@ -50,10 +50,11 @@ function ChartCard({ title, children, className = "", rightSlot }: ChartCardProp
 }
 
 interface SalesGoalsChartProps {
+  selectedValues?: string[];
   onSelectionChange?: (selected: string[]) => void;
 }
 
-export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}) {
+export function SalesGoalsChart({ selectedValues = [], onSelectionChange }: SalesGoalsChartProps = {}) {
   const { data: salesGoals } = useSalesGoals();
   
   const chartData = useMemo(() => {
@@ -73,7 +74,7 @@ export function SalesGoalsChart({ onSelectionChange }: SalesGoalsChartProps = {}
       title="Sales Goals vs Actual ($)"
       rightSlot={
         <SalesDropdown 
-          selectedValues={[]} 
+          selectedValues={selectedValues} 
           onSelectionChange={onSelectionChange || (() => {})} 
         />
       }

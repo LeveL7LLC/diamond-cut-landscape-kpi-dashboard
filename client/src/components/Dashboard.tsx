@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle, Bell, TrendingUp, Target, BarChart3, Plus, Database } from 'lucide-react';
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -36,12 +36,20 @@ import { MOCK_KPI_VALUES, MOCK_CSRS, MOCK_SALES_REPS, MOCK_SERVICES, MOCK_PROFIT
 export default function Dashboard() {
   const [location] = useLocation();
   
-  // State management
-  const [dateRange, setDateRange] = useState<DateRange>({
-    start: '2025-08-25',
-    end: '2025-09-28',
-    preset: '30d'
-  });
+  // State management - Initialize with proper 30-day range ending yesterday
+  const initRange = (days: number): DateRange => {
+    const end = new Date();
+    end.setDate(end.getDate() - 1); // Set end to yesterday (previous day)
+    const start = new Date();
+    start.setDate(end.getDate() - (days - 1)); // Adjust start to maintain the correct number of days
+    return {
+      start: start.toISOString().slice(0, 10),
+      end: end.toISOString().slice(0, 10),
+      preset: (days + 'd') as '7d' | '30d' | '90d'
+    };
+  };
+
+  const [dateRange, setDateRange] = useState<DateRange>(initRange(30));
 
   const [showAlerts, setShowAlerts] = useState(false);
   
@@ -72,76 +80,260 @@ export default function Dashboard() {
   const { data: customerConcerns } = useCustomerConcerns();
 
   // Process data for segmented line charts
-  const generateSegmentData = useMemo(() => {
-    return (options: any[], selected: string[], apiData?: any[]) => {
-      return options
-        .filter(opt => selected.includes(opt.value))
-        .map(opt => {
-          // Use real data if available, otherwise fallback to mock
-          const realData = apiData?.find(item => item.name === opt.label || item.id === opt.value);
-          const proportion = realData ? (realData.count || realData.value || 0) / 100 : Math.random() * 0.5 + 0.1;
-          
-          return {
-            value: opt.value,
-            label: opt.label,
-            color: opt.color,
-            proportion: Math.min(proportion, 1) // Ensure proportion doesn't exceed 1
-          };
-        });
+  const generateSegmentData = useCallback((options: any[], selected: string[], apiData?: any[]) => {
+    // Consistent mock proportions for each option type
+    const mockProportions: { [key: string]: number } = {
+      'angi': 0.35,
+      'nextdoor': 0.25,
+      'google-ads': 0.20,
+      'google-lsa': 0.20,
+      'postcards': 0.15,
+      'website': 0.10,
+      'ava': 0.30,
+      'marco': 0.25,
+      'tia': 0.25,
+      'jordan': 0.20,
+      'diego': 0.30,
+      'brooke': 0.25,
+      'sam': 0.25,
+      'lena': 0.20,
+      'hardscapes': 0.35,
+      'planting': 0.25,
+      'irrigation': 0.20,
+      'lighting': 0.15,
+      'pergolas': 0.15,
+      'water-features': 0.10,
+      'turf': 0.10
     };
+
+    return options
+      .filter(opt => selected.includes(opt.value))
+      .map(opt => {
+        // Use real data if available and valid, otherwise fallback to consistent mock
+        const realData = apiData?.find(item => 
+          item.name === opt.label || 
+          item.id === opt.value ||
+          item.name?.toLowerCase().replace(/\s+/g, '-') === opt.value
+        );
+        
+        let proportion = mockProportions[opt.value] || 0.15;
+        
+        if (realData) {
+          const dataValue = realData.count || realData.value || realData.amount || 0;
+          if (typeof dataValue === 'number' && !isNaN(dataValue) && dataValue > 0) {
+            // Use a reasonable scaling factor - adjust based on your data range
+            proportion = Math.min(dataValue / 100, 1); // Cap at 100%
+          }
+        }
+        
+        return {
+          value: opt.value,
+          label: opt.label,
+          color: opt.color,
+          proportion: Math.min(proportion, 1) // Ensure proportion doesn't exceed 1
+        };
+      });
   }, []);
 
-  const leadsSegmentData = generateSegmentData(LEAD_SOURCES_OPTIONS, selectedLeadSources, leadSources);
-  const csrSegmentData = generateSegmentData(CSR_OPTIONS, selectedCSRs, csrs);
-  const salesSegmentData = generateSegmentData(SALES_OPTIONS, selectedSalesReps, salesReps);
-  const servicesSegmentData = generateSegmentData(SERVICE_OPTIONS, selectedServices, services);
+  const leadsSegmentData = useMemo(() => 
+    generateSegmentData(LEAD_SOURCES_OPTIONS, selectedLeadSources, leadSources), 
+    [generateSegmentData, selectedLeadSources, leadSources]
+  );
+  
+  const csrSegmentData = useMemo(() => 
+    generateSegmentData(CSR_OPTIONS, selectedCSRs, csrs), 
+    [generateSegmentData, selectedCSRs, csrs]
+  );
+  
+  const salesSegmentData = useMemo(() => 
+    generateSegmentData(SALES_OPTIONS, selectedSalesReps, salesReps), 
+    [generateSegmentData, selectedSalesReps, salesReps]
+  );
+  
+  const servicesSegmentData = useMemo(() => 
+    generateSegmentData(SERVICE_OPTIONS, selectedServices, services), 
+    [generateSegmentData, selectedServices, services]
+  );
+
+  // Filtered data calculations for KPI tiles
+  const filteredLeadsTotal = useMemo(() => {
+    if (!dailyLeads || dailyLeads.length === 0) {
+      return MOCK_KPI_VALUES.qualifiedLeads;
+    }
+    
+    // Since the database uses IDs, we need to match leadSourceId with actual lead source names
+    const filteredData = dailyLeads.filter((item: any) => {
+      if (item.leadSourceId && leadSources && leadSources.length > 0) {
+        // Find the lead source by ID
+        const leadSource = leadSources.find((source: any) => source.id === item.leadSourceId);
+        if (leadSource) {
+          const sourceName = leadSource.name?.toLowerCase().replace(/\s+/g, '-');
+          return selectedLeadSources.includes(sourceName);
+        }
+      }
+      
+      // Fallback: if no leadSourceId matching, include all items when all sources are selected
+      return selectedLeadSources.length === LEAD_SOURCES_OPTIONS.length;
+    });
+    
+    const total = filteredData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
+    return total.toString();
+  }, [dailyLeads, selectedLeadSources, leadSources]);
+
+  const filteredBookingRate = useMemo(() => {
+    if (!dailyBookings || dailyBookings.length === 0) {
+      return MOCK_KPI_VALUES.bookingRate;
+    }
+    
+    // Filter bookings by selected CSRs - this data contains both leads and appointments per CSR
+    const filteredBookings = dailyBookings.filter((item: any) => {
+      if (item.csrId && csrs && csrs.length > 0) {
+        const csr = csrs.find((c: any) => c.id === item.csrId);
+        if (csr) {
+          const csrName = csr.name?.toLowerCase().replace(/\s+/g, '-');
+          return selectedCSRs.includes(csrName);
+        }
+      }
+      return selectedCSRs.length === CSR_OPTIONS.length;
+    });
+    
+    const totalLeads = filteredBookings.reduce((sum: number, item: any) => sum + (item.leads || 0), 0);
+    const totalAppointments = filteredBookings.reduce((sum: number, item: any) => sum + (item.appointments || 0), 0);
+    const rate = totalLeads > 0 ? Math.round((totalAppointments / totalLeads) * 100) : 0;
+    return `${rate}%`;
+  }, [dailyBookings, selectedCSRs, csrs]);
+
+  // Separate calculation for booking rate total leads (for validation display)
+  const filteredBookingLeads = useMemo(() => {
+    if (!dailyBookings || dailyBookings.length === 0) {
+      return 0;
+    }
+    
+    const filteredBookings = dailyBookings.filter((item: any) => {
+      if (item.csrId && csrs && csrs.length > 0) {
+        const csr = csrs.find((c: any) => c.id === item.csrId);
+        if (csr) {
+          const csrName = csr.name?.toLowerCase().replace(/\s+/g, '-');
+          return selectedCSRs.includes(csrName);
+        }
+      }
+      return selectedCSRs.length === CSR_OPTIONS.length;
+    });
+    
+    return filteredBookings.reduce((sum: number, item: any) => sum + (item.leads || 0), 0);
+  }, [dailyBookings, selectedCSRs, csrs]);
+
+  const filteredCloseRate = useMemo(() => {
+    if (!dailyBookings || !dailyCloses || dailyBookings.length === 0 || dailyCloses.length === 0) {
+      return MOCK_KPI_VALUES.closeRate;
+    }
+    
+    const filteredCloses = dailyCloses.filter((item: any) => {
+      if (item.salesRepId && salesReps && salesReps.length > 0) {
+        const salesRep = salesReps.find((rep: any) => rep.id === item.salesRepId);
+        if (salesRep) {
+          const repName = salesRep.name?.toLowerCase().replace(/\s+/g, '-');
+          return selectedSalesReps.includes(repName);
+        }
+      }
+      return selectedSalesReps.length === SALES_OPTIONS.length;
+    });
+    
+    const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + (item.appointments || 0), 0);
+    const totalCloses = filteredCloses.reduce((sum: number, item: any) => sum + (item.signed || 0), 0);
+    const rate = totalBookings > 0 ? Math.round((totalCloses / totalBookings) * 100) : 0;
+    return `${rate}%`;
+  }, [dailyBookings, dailyCloses, selectedSalesReps, salesReps]);
+
+  const filteredContractValue = useMemo(() => {
+    if (!dailyContracts || dailyContracts.length === 0) {
+      return MOCK_KPI_VALUES.avgContractValue;
+    }
+    
+    const filteredContracts = dailyContracts.filter((item: any) => {
+      if (item.serviceId && services && services.length > 0) {
+        const service = services.find((s: any) => s.id === item.serviceId);
+        if (service) {
+          const serviceName = service.name?.toLowerCase().replace(/\s+/g, '-');
+          return selectedServices.includes(serviceName);
+        }
+      }
+      return selectedServices.length === SERVICE_OPTIONS.length;
+    });
+    
+    const totalValue = filteredContracts.reduce((sum: number, item: any) => sum + parseFloat(item.amount || '0'), 0);
+    const totalCount = filteredContracts.length;
+    const avgValue = totalCount > 0 ? Math.round(totalValue / totalCount) : 0;
+    return `$${avgValue.toLocaleString()}`;
+  }, [dailyContracts, selectedServices, services]);
 
   // Processed data for legends (use API data when available, fallback to mock)
   const processedLeadSources = useMemo(() => {
-    if (leadSources && leadSources.length > 0) {
-      return leadSources.slice(0, 4).map((source: any, index: number) => ({
-        name: source.name,
-        color: LEAD_SOURCES_OPTIONS[index]?.color || "#22c55e",
-        count: source.count
-      }));
-    }
-    return [
-      { name: "Angi", color: "#22c55e", count: 42 },
-      { name: "Nextdoor", color: "#60a5fa", count: 38 },
-      { name: "Google Ads", color: "#f59e0b", count: 35 },
-      { name: "Google LSA", color: "#a78bfa", count: 28 }
-    ];
-  }, [leadSources]);
+    const allSources = leadSources && leadSources.length > 0 
+      ? leadSources.slice(0, 4).map((source: any, index: number) => ({
+          name: source.name,
+          value: source.name.toLowerCase().replace(/\s+/g, '-'),
+          color: LEAD_SOURCES_OPTIONS[index]?.color || "#22c55e",
+          count: source.count
+        }))
+      : [
+          { name: "Angi", value: "angi", color: "#22c55e", count: 42 },
+          { name: "Nextdoor", value: "nextdoor", color: "#60a5fa", count: 38 },
+          { name: "Google Ads", value: "google-ads", color: "#f59e0b", count: 35 },
+          { name: "Google LSA", value: "google-lsa", color: "#a78bfa", count: 28 }
+        ];
+    
+    // Filter based on selected values
+    return allSources.filter(source => selectedLeadSources.includes(source.value));
+  }, [leadSources, selectedLeadSources]);
 
   const processedCSRs = useMemo(() => {
-    if (csrs && csrs.length > 0) {
-      return csrs.map((csr: any, index: number) => ({
-        name: csr.name,
-        color: CSR_OPTIONS[index]?.color || "#22c55e"
-      }));
-    }
-    return MOCK_CSRS;
-  }, [csrs]);
+    const allCSRs = csrs && csrs.length > 0 
+      ? csrs.map((csr: any, index: number) => ({
+          name: csr.name,
+          value: csr.name.toLowerCase().replace(/\s+/g, '-'),
+          color: CSR_OPTIONS[index]?.color || "#22c55e"
+        }))
+      : MOCK_CSRS.map(csr => ({
+          ...csr,
+          value: csr.name.toLowerCase().replace(/\s+/g, '-')
+        }));
+    
+    // Filter based on selected values
+    return allCSRs.filter(csr => selectedCSRs.includes(csr.value));
+  }, [csrs, selectedCSRs]);
 
   const processedSalesReps = useMemo(() => {
-    if (salesReps && salesReps.length > 0) {
-      return salesReps.map((rep: any, index: number) => ({
-        name: rep.name,
-        color: SALES_OPTIONS[index]?.color || "#22c55e"
-      }));
-    }
-    return MOCK_SALES_REPS;
-  }, [salesReps]);
+    const allSalesReps = salesReps && salesReps.length > 0 
+      ? salesReps.map((rep: any, index: number) => ({
+          name: rep.name,
+          value: rep.name.toLowerCase().replace(/\s+/g, '-'),
+          color: SALES_OPTIONS[index]?.color || "#22c55e"
+        }))
+      : MOCK_SALES_REPS.map(rep => ({
+          ...rep,
+          value: rep.name.toLowerCase().replace(/\s+/g, '-')
+        }));
+    
+    // Filter based on selected values
+    return allSalesReps.filter(rep => selectedSalesReps.includes(rep.value));
+  }, [salesReps, selectedSalesReps]);
 
   const processedServices = useMemo(() => {
-    if (services && services.length > 0) {
-      return services.map((service: any, index: number) => ({
-        name: service.name,
-        color: SERVICE_OPTIONS[index]?.color || "#22c55e"
-      }));
-    }
-    return MOCK_SERVICES;
-  }, [services]);
+    const allServices = services && services.length > 0 
+      ? services.map((service: any, index: number) => ({
+          name: service.name,
+          value: service.name.toLowerCase().replace(/\s+/g, '-'),
+          color: SERVICE_OPTIONS[index]?.color || "#22c55e"
+        }))
+      : MOCK_SERVICES.map(service => ({
+          ...service,
+          value: service.name.toLowerCase().replace(/\s+/g, '-')
+        }));
+    
+    // Filter based on selected values
+    return allServices.filter(service => selectedServices.includes(service.value));
+  }, [services, selectedServices]);
 
   const leadSourcesLegend = (
     <div className="flex flex-wrap gap-2">
@@ -340,17 +532,10 @@ export default function Dashboard() {
         <KpiTile
           icon={PhoneCall}
           label="Qualified Leads"
-          value={(() => {
-            // Check if database call returns completely empty, use original mock calculation
-            if (!dailyLeads || dailyLeads.length === 0) {
-              return MOCK_KPI_VALUES.qualifiedLeads;
-            }
-            const total = dailyLeads.reduce((sum: number, item: any) => sum + item.count, 0);
-            return total.toString();
-          })()}
+          value={filteredLeadsTotal}
           sub="2025-08-25 → 2025-09-28"
           data-testid="kpi-qualified-leads"
-          rightSlot={<LeadSourcesDropdown onSelectionChange={setSelectedLeadSources} />}
+          rightSlot={<LeadSourcesDropdown selectedValues={selectedLeadSources} onSelectionChange={setSelectedLeadSources} />}
           sparkline={<SegmentedLine segments={leadsSegmentData} />}
           bottomSlot={leadSourcesLegend}
         />
@@ -358,19 +543,10 @@ export default function Dashboard() {
         <KpiTile
           icon={CalendarCheck2}
           label="Booking Rate"
-          value={(() => {
-            // Check if database calls return completely empty, use original mock calculation
-            if (!dailyLeads || !dailyBookings || dailyLeads.length === 0 || dailyBookings.length === 0) {
-              return MOCK_KPI_VALUES.bookingRate;
-            }
-            const totalLeads = dailyLeads.reduce((sum: number, item: any) => sum + item.count, 0);
-            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.appointments, 0);
-            const rate = totalLeads > 0 ? Math.round((totalBookings / totalLeads) * 100) : 0;
-            return `${rate}%`;
-          })()}
-          sub="Leads → Consult"
+          value={filteredBookingRate}
+          sub={`${filteredBookingLeads} Leads → Consult`}
           data-testid="kpi-booking-rate"
-          rightSlot={<CSRDropdown onSelectionChange={setSelectedCSRs} />}
+          rightSlot={<CSRDropdown selectedValues={selectedCSRs} onSelectionChange={setSelectedCSRs} />}
           sparkline={<SegmentedLine segments={csrSegmentData} />}
           bottomSlot={csrLegend}
         />
@@ -378,19 +554,10 @@ export default function Dashboard() {
         <KpiTile
           icon={ClipboardCheck}
           label="Close Rate"
-          value={(() => {
-            // Check if database calls return completely empty, use original mock calculation
-            if (!dailyBookings || !dailyCloses || dailyBookings.length === 0 || dailyCloses.length === 0) {
-              return MOCK_KPI_VALUES.closeRate;
-            }
-            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.appointments, 0);
-            const totalCloses = dailyCloses.reduce((sum: number, item: any) => sum + item.signed, 0);
-            const rate = totalBookings > 0 ? Math.round((totalCloses / totalBookings) * 100) : 0;
-            return `${rate}%`;
-          })()}
+          value={filteredCloseRate}
           sub="Signed / Presented"
           data-testid="kpi-close-rate"
-          rightSlot={<SalesDropdown onSelectionChange={setSelectedSalesReps} />}
+          rightSlot={<SalesDropdown selectedValues={selectedSalesReps} onSelectionChange={setSelectedSalesReps} />}
           sparkline={<SegmentedLine segments={salesSegmentData} />}
           bottomSlot={salesRepsLegend}
         />
@@ -398,19 +565,10 @@ export default function Dashboard() {
         <KpiTile
           icon={DollarSign}
           label="Avg Contract Value"
-          value={(() => {
-            // Check if database call returns completely empty, use original mock calculation
-            if (!dailyContracts || dailyContracts.length === 0) {
-              return MOCK_KPI_VALUES.avgContractValue;
-            }
-            const totalValue = dailyContracts.reduce((sum: number, item: any) => sum + parseFloat(item.amount || '0'), 0);
-            const totalCount = dailyContracts.length;
-            const avgValue = totalCount > 0 ? Math.round(totalValue / totalCount) : 0;
-            return `$${avgValue.toLocaleString()}`;
-          })()}
+          value={filteredContractValue}
           sub="2025-09-28 → 2025-09-28"
           data-testid="kpi-contract-value"
-          rightSlot={<ServicesDropdown onSelectionChange={setSelectedServices} />}
+          rightSlot={<ServicesDropdown selectedValues={selectedServices} onSelectionChange={setSelectedServices} />}
           sparkline={<SegmentedLine segments={servicesSegmentData} />}
           bottomSlot={servicesLegend}
         />
@@ -852,7 +1010,7 @@ export default function Dashboard() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        <SalesGoalsChart onSelectionChange={setSelectedSalesReps} />
+        <SalesGoalsChart selectedValues={selectedSalesReps} onSelectionChange={setSelectedSalesReps} />
         <ARAgingChart />
         <CapacityChart />
       </div>

@@ -102,7 +102,11 @@ export default function KpiDropdown({
                   <button
                     key={option.value}
                     onClick={() => toggle(option.value)}
-                    className="w-full flex items-center justify-between p-1.5 rounded text-xs hover:bg-muted/30 transition-colors"
+                    className={`w-full flex items-center justify-between p-1.5 rounded text-xs transition-colors ${
+                      isSelected 
+                        ? 'bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30' 
+                        : 'hover:bg-muted/30'
+                    }`}
                     data-testid={`button-option-${option.value.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <div className="flex items-center gap-1.5">

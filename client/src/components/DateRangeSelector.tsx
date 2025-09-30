@@ -18,8 +18,9 @@ export default function DateRangeSelector({ range, setRange, "data-testid": test
 
   const initRange = (days: number): DateRange => {
     const end = new Date();
+    end.setDate(end.getDate() - 1); // Set end to yesterday (previous day)
     const start = new Date();
-    start.setDate(end.getDate() - days);
+    start.setDate(end.getDate() - (days - 1)); // Adjust start to maintain the correct number of days
     return {
       start: start.toISOString().slice(0, 10),
       end: end.toISOString().slice(0, 10),
