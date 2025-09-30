@@ -79,6 +79,11 @@ export default function Dashboard() {
   const { data: annualRevenue } = useAnnualRevenue();
   const { data: customerConcerns } = useCustomerConcerns();
 
+  const monthlyFinanceData = Array.isArray(monthlyFinance) ? monthlyFinance : [];
+  const salesGoalsData = Array.isArray(salesGoals) ? salesGoals : [];
+  const arAgingData = Array.isArray(arAging) ? arAging : [];
+  const customerConcernsData = Array.isArray(customerConcerns) ? customerConcerns : [];
+
   // Process data for segmented line charts
   const generateSegmentData = useCallback((options: any[], selected: string[], apiData?: any[]) => {
     // Consistent mock proportions for each option type
@@ -581,13 +586,13 @@ export default function Dashboard() {
             label="Gross Profit"
             value={(() => {
               // Check if database has monthly finance data for profit calculations
-              if (!monthlyFinance || monthlyFinance.length === 0) {
+              if (monthlyFinanceData.length === 0) {
                 return MOCK_PROFIT_DATA.grossProfit.value;
               }
               
               // Get current month entries and calculate average
               const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-              const currentMonthEntries = monthlyFinance.filter(entry => 
+              const currentMonthEntries = monthlyFinanceData.filter(entry => 
                 entry.month.startsWith(currentMonth)
               );
               
@@ -603,7 +608,7 @@ export default function Dashboard() {
               return averageGrossProfit; // Data is already in decimal format (0.48 = 48%)
             })()}
             mom={(() => {
-              if (!monthlyFinance || monthlyFinance.length === 0) {
+              if (monthlyFinanceData.length === 0) {
                 return MOCK_PROFIT_DATA.grossProfit.mom;
               }
               
@@ -611,8 +616,8 @@ export default function Dashboard() {
               const currentMonth = new Date().toISOString().slice(0, 7);
               const previousMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
               
-              const currentMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(currentMonth));
-              const previousMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(previousMonth));
+              const currentMonthEntries = monthlyFinanceData.filter(entry => entry.month.startsWith(currentMonth));
+              const previousMonthEntries = monthlyFinanceData.filter(entry => entry.month.startsWith(previousMonth));
               
               if (currentMonthEntries.length === 0 || previousMonthEntries.length === 0) {
                 return MOCK_PROFIT_DATA.grossProfit.mom;
@@ -632,13 +637,13 @@ export default function Dashboard() {
             label="Net Profit"
             value={(() => {
               // Check if database has monthly finance data for profit calculations
-              if (!monthlyFinance || monthlyFinance.length === 0) {
+              if (monthlyFinanceData.length === 0) {
                 return MOCK_PROFIT_DATA.netProfit.value;
               }
               
               // Get current month entries and calculate average
               const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-              const currentMonthEntries = monthlyFinance.filter(entry => 
+              const currentMonthEntries = monthlyFinanceData.filter(entry => 
                 entry.month.startsWith(currentMonth)
               );
               
@@ -654,7 +659,7 @@ export default function Dashboard() {
               return averageNetProfit; // Data is already in decimal format (0.16 = 16%)
             })()}
             mom={(() => {
-              if (!monthlyFinance || monthlyFinance.length === 0) {
+              if (monthlyFinanceData.length === 0) {
                 return MOCK_PROFIT_DATA.netProfit.mom;
               }
               
@@ -662,8 +667,8 @@ export default function Dashboard() {
               const currentMonth = new Date().toISOString().slice(0, 7);
               const previousMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
               
-              const currentMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(currentMonth));
-              const previousMonthEntries = monthlyFinance.filter(entry => entry.month.startsWith(previousMonth));
+              const currentMonthEntries = monthlyFinanceData.filter(entry => entry.month.startsWith(currentMonth));
+              const previousMonthEntries = monthlyFinanceData.filter(entry => entry.month.startsWith(previousMonth));
               
               if (currentMonthEntries.length === 0 || previousMonthEntries.length === 0) {
                 return MOCK_PROFIT_DATA.netProfit.mom;
@@ -688,14 +693,14 @@ export default function Dashboard() {
             <div className="text-lg font-semibold text-foreground mb-2">
               {(() => {
                 // Check if database has sales goals data (this matches the Analytics > Goals tab)
-                if (!salesGoals || salesGoals.length === 0) {
+                if (salesGoalsData.length === 0) {
                   const current = (MOCK_MONTHLY_REVENUE.currentRevenue / 1000).toFixed(0);
                   const goal = (MOCK_MONTHLY_REVENUE.goal / 1000).toFixed(0);
                   return `$${current}k / $${goal}k`;
                 }
                 // Calculate from sales goals data - filter for current month (September 2025)
                 const currentMonth = new Date().toISOString().slice(0, 7); // "2025-09"
-                const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                const currentMonthGoals = salesGoalsData.filter(goal => goal.period.startsWith(currentMonth));
                 const totalActual = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.actualAmount || '0'), 0);
                 const totalGoal = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.goalAmount || '0'), 0);
                 const current = (totalActual / 1000).toFixed(0);
@@ -709,11 +714,11 @@ export default function Dashboard() {
                 <span className="text-muted-foreground">Goal</span>
                 <span className="text-muted-foreground">
                   {(() => {
-                    if (!salesGoals || salesGoals.length === 0) {
+                    if (salesGoalsData.length === 0) {
                       return `$${(MOCK_MONTHLY_REVENUE.goal / 1000).toFixed(0)}k`;
                     }
                     const currentMonth = new Date().toISOString().slice(0, 7);
-                    const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                    const currentMonthGoals = salesGoalsData.filter(goal => goal.period.startsWith(currentMonth));
                     const totalGoal = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.goalAmount || '0'), 0);
                     return `$${(totalGoal / 1000).toFixed(0)}k`;
                   })()}
@@ -722,7 +727,7 @@ export default function Dashboard() {
               <div className="flex h-1.5 bg-muted/20 rounded-full overflow-hidden">
                 {(() => {
                   // Check if database has sales goals data
-                  if (!salesGoals || salesGoals.length === 0) {
+                  if (salesGoalsData.length === 0) {
                     // Use mock data percentages
                     const total = MOCK_MONTHLY_REVENUE.goal;
                     return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep, index) => (
@@ -736,7 +741,7 @@ export default function Dashboard() {
                   
                   // Calculate from sales goals data - filter for current month
                   const currentMonth = new Date().toISOString().slice(0, 7);
-                  const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                  const currentMonthGoals = salesGoalsData.filter(goal => goal.period.startsWith(currentMonth));
                   const totalRevenue = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.actualAmount || '0'), 0);
                   const colors = ['primary', 'chart-2', 'chart-3', 'chart-4'];
                   
@@ -752,7 +757,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs">
                 {(() => {
                   // Check if database has sales goals data
-                  if (!salesGoals || salesGoals.length === 0 || !salesReps || salesReps.length === 0) {
+                  if (salesGoalsData.length === 0 || !salesReps || salesReps.length === 0) {
                     return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep) => (
                       <div key={rep.name} className="flex items-center gap-1">
                         <div className={`w-1.5 h-1.5 bg-${rep.color} rounded-full`}></div>
@@ -763,7 +768,7 @@ export default function Dashboard() {
                   
                   // Use actual sales goals data - filter for current month
                   const currentMonth = new Date().toISOString().slice(0, 7);
-                  const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                  const currentMonthGoals = salesGoalsData.filter(goal => goal.period.startsWith(currentMonth));
                   const colors = ['primary', 'chart-2', 'chart-3', 'chart-4'];
                   
                   return currentMonthGoals.map((goalData, index) => {
@@ -818,11 +823,11 @@ export default function Dashboard() {
         <Thermometer
           value={(() => {
             // Check if database has monthly finance data for billing calculations
-            if (!monthlyFinance || monthlyFinance.length === 0) {
+            if (monthlyFinanceData.length === 0) {
               return MOCK_PROGRESS_BILLING.onTimeRate;
             }
             // Calculate on-time billing rate from database data
-            const latestMonth = monthlyFinance[monthlyFinance.length - 1];
+            const latestMonth = monthlyFinanceData[monthlyFinanceData.length - 1];
             return latestMonth?.billingOnTimeRate || MOCK_PROGRESS_BILLING.onTimeRate;
           })()}
           label="Progress Billing On-Time"
@@ -837,11 +842,11 @@ export default function Dashboard() {
           label="Project Collections"
           value={(() => {
             // Calculate total collections from AR Aging data
-            if (!arAging || arAging.length === 0) {
+            if (arAgingData.length === 0) {
               return MOCK_KPI_VALUES.projectCollections;
             }
             // Get the latest AR aging record
-            const latestAging = arAging[0]; // Assuming sorted by date desc
+            const latestAging = arAgingData[0]; // Assuming sorted by date desc
             const totalOutstanding = parseFloat(latestAging.bucket030 || '0') + 
                                    parseFloat(latestAging.bucket3160 || '0') + 
                                    parseFloat(latestAging.bucket6190 || '0') + 
@@ -860,7 +865,7 @@ export default function Dashboard() {
             <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
               {(() => {
                 // Check if database has data for collection percentages
-                if (!monthlyFinance || monthlyFinance.length === 0) {
+                if (monthlyFinanceData.length === 0) {
                   return (
                     <>
                       <div className="bg-primary h-full" style={{ width: `${MOCK_PROJECT_COLLECTIONS.collectedPercentage}%` }}></div>
@@ -869,7 +874,7 @@ export default function Dashboard() {
                   );
                 }
                 // Calculate from database data
-                const latestMonth = monthlyFinance[monthlyFinance.length - 1];
+                const latestMonth = monthlyFinanceData[monthlyFinanceData.length - 1];
                 const collectedPct = latestMonth?.collectedPercentage || MOCK_PROJECT_COLLECTIONS.collectedPercentage;
                 const outstandingPct = 100 - collectedPct;
                 return (
@@ -884,7 +889,7 @@ export default function Dashboard() {
           bottomSlot={
             <div className="flex justify-between text-xs text-muted-foreground">
               {(() => {
-                if (!arAging || arAging.length === 0) {
+                if (arAgingData.length === 0) {
                   return (
                     <>
                       <span>Collected: $316,758 (65%)</span>
@@ -892,7 +897,7 @@ export default function Dashboard() {
                     </>
                   );
                 }
-                const latestAging = arAging[0];
+                const latestAging = arAgingData[0];
                 const totalOutstanding = parseFloat(latestAging.bucket030 || '0') + 
                                        parseFloat(latestAging.bucket3160 || '0') + 
                                        parseFloat(latestAging.bucket6190 || '0') + 
@@ -917,11 +922,11 @@ export default function Dashboard() {
           label="Collection Due"
           value={(() => {
             // Check if database has AR aging data for collection calculations
-            if (!arAging || arAging.length === 0) {
+            if (arAgingData.length === 0) {
               return MOCK_KPI_VALUES.collectionDue;
             }
             // Get the latest AR aging record and sum all buckets
-            const latestAging = arAging[0]; // Assuming sorted by date desc
+            const latestAging = arAgingData[0]; // Assuming sorted by date desc
             const totalDue = parseFloat(latestAging.bucket030 || '0') + 
                            parseFloat(latestAging.bucket3160 || '0') + 
                            parseFloat(latestAging.bucket6190 || '0') + 
@@ -947,15 +952,15 @@ export default function Dashboard() {
           label="Customer Concerns"
           value={(() => {
             // Check if database has customer concerns data
-            if (!customerConcerns || customerConcerns.length === 0) {
+            if (customerConcernsData.length === 0) {
               return MOCK_KPI_VALUES.customerConcerns;
             }
-            return customerConcerns.length.toString();
+            return customerConcernsData.length.toString();
           })()}
           sub="Total Concerns"
           data-testid="kpi-customer-concerns"
           sparkline={(() => {
-            if (!customerConcerns || customerConcerns.length === 0) {
+            if (customerConcernsData.length === 0) {
               return (
                 <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
                   <div className="bg-chart-3 h-full" style={{ width: '45%' }}></div>
@@ -965,10 +970,10 @@ export default function Dashboard() {
               );
             }
             
-            const lowCount = customerConcerns.filter((concern: any) => concern.priority === 'Low').length;
-            const medCount = customerConcerns.filter((concern: any) => concern.priority === 'Med').length;
-            const highCount = customerConcerns.filter((concern: any) => concern.priority === 'High').length;
-            const total = customerConcerns.length || 1;
+            const lowCount = customerConcernsData.filter((concern: any) => concern.priority === 'Low').length;
+            const medCount = customerConcernsData.filter((concern: any) => concern.priority === 'Med').length;
+            const highCount = customerConcernsData.filter((concern: any) => concern.priority === 'High').length;
+            const total = customerConcernsData.length || 1;
             
             const lowPercent = (lowCount / total) * 100;
             const medPercent = (medCount / total) * 100;
@@ -983,7 +988,7 @@ export default function Dashboard() {
             );
           })()}
           bottomSlot={(() => {
-            if (!customerConcerns || customerConcerns.length === 0) {
+            if (customerConcernsData.length === 0) {
               return (
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Low: 8</span>
@@ -993,9 +998,9 @@ export default function Dashboard() {
               );
             }
             
-            const lowCount = customerConcerns.filter((concern: any) => concern.priority === 'Low').length;
-            const medCount = customerConcerns.filter((concern: any) => concern.priority === 'Med').length;
-            const highCount = customerConcerns.filter((concern: any) => concern.priority === 'High').length;
+            const lowCount = customerConcernsData.filter((concern: any) => concern.priority === 'Low').length;
+            const medCount = customerConcernsData.filter((concern: any) => concern.priority === 'Med').length;
+            const highCount = customerConcernsData.filter((concern: any) => concern.priority === 'High').length;
             
             return (
               <div className="flex justify-between text-xs text-muted-foreground">

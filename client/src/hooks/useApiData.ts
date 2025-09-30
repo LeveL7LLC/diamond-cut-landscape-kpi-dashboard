@@ -12,30 +12,30 @@ async function fetchApiData<T>(endpoint: string): Promise<T> {
 
 // Core entity hooks
 export function useLeadSources() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['lead-sources'],
-    queryFn: () => fetchApiData('/api/lead-sources'),
+    queryFn: () => fetchApiData<any[]>('/api/lead-sources'),
   });
 }
 
 export function useCSRs() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['csrs'],
-    queryFn: () => fetchApiData('/api/csrs'),
+    queryFn: () => fetchApiData<any[]>('/api/csrs'),
   });
 }
 
 export function useSalesReps() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['sales-reps'],
-    queryFn: () => fetchApiData('/api/sales-reps'),
+    queryFn: () => fetchApiData<any[]>('/api/sales-reps'),
   });
 }
 
 export function useServices() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['services'],
-    queryFn: () => fetchApiData('/api/services'),
+    queryFn: () => fetchApiData<any[]>('/api/services'),
   });
 }
 
@@ -46,9 +46,9 @@ export function useDailyLeads(startDate?: string, endDate?: string) {
   if (endDate) params.append('endDate', endDate);
   const queryString = params.toString();
   
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['daily-leads', startDate, endDate],
-    queryFn: () => fetchApiData(`/api/daily-leads${queryString ? `?${queryString}` : ''}`),
+    queryFn: () => fetchApiData<any[]>(`/api/daily-leads${queryString ? `?${queryString}` : ''}`),
   });
 }
 
@@ -58,9 +58,9 @@ export function useDailyBookings(startDate?: string, endDate?: string) {
   if (endDate) params.append('endDate', endDate);
   const queryString = params.toString();
   
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['daily-bookings', startDate, endDate],
-    queryFn: () => fetchApiData(`/api/daily-bookings${queryString ? `?${queryString}` : ''}`),
+    queryFn: () => fetchApiData<any[]>(`/api/daily-bookings${queryString ? `?${queryString}` : ''}`),
   });
 }
 
@@ -70,9 +70,9 @@ export function useDailyCloses(startDate?: string, endDate?: string) {
   if (endDate) params.append('endDate', endDate);
   const queryString = params.toString();
   
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['daily-closes', startDate, endDate],
-    queryFn: () => fetchApiData(`/api/daily-closes${queryString ? `?${queryString}` : ''}`),
+    queryFn: () => fetchApiData<any[]>(`/api/daily-closes${queryString ? `?${queryString}` : ''}`),
   });
 }
 
@@ -82,24 +82,24 @@ export function useDailyContracts(startDate?: string, endDate?: string) {
   if (endDate) params.append('endDate', endDate);
   const queryString = params.toString();
   
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['daily-contracts', startDate, endDate],
-    queryFn: () => fetchApiData(`/api/daily-contracts${queryString ? `?${queryString}` : ''}`),
+    queryFn: () => fetchApiData<any[]>(`/api/daily-contracts${queryString ? `?${queryString}` : ''}`),
   });
 }
 
 // Financial and analytics hooks
 export function useMonthlyFinance() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['monthly-finance'],
-    queryFn: () => fetchApiData('/api/monthly-finance'),
+    queryFn: () => fetchApiData<any[]>('/api/monthly-finance'),
   });
 }
 
 export function useArAging() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['ar-aging'],
-    queryFn: () => fetchApiData('/api/ar-aging'),
+    queryFn: () => fetchApiData<any[]>('/api/ar-aging'),
   });
 }
 
@@ -109,23 +109,23 @@ export function useMarginVariance(startDate?: string, endDate?: string) {
   if (endDate) params.append('endDate', endDate);
   const queryString = params.toString();
   
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['margin-variance', startDate, endDate],
-    queryFn: () => fetchApiData(`/api/margin-variance${queryString ? `?${queryString}` : ''}`),
+    queryFn: () => fetchApiData<any[]>(`/api/margin-variance${queryString ? `?${queryString}` : ''}`),
   });
 }
 
 export function useCustomerConcerns() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['customer-concerns'],
-    queryFn: () => fetchApiData('/api/customer-concerns'),
+    queryFn: () => fetchApiData<any[]>('/api/customer-concerns'),
   });
 }
 
 export function useSalesGoals() {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['sales-goals'],
-    queryFn: () => fetchApiData('/api/sales-goals'),
+    queryFn: () => fetchApiData<any[]>('/api/sales-goals'),
   });
 }
 

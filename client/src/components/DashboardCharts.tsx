@@ -111,6 +111,10 @@ export function ARAgingChart() {
   const { data: marginVariance } = useMarginVariance();
   const { data: services } = useServices();
 
+  const arAgingData = Array.isArray(arAging) ? arAging : [];
+  const marginVarianceData = Array.isArray(marginVariance) ? marginVariance : [];
+  const servicesData = Array.isArray(services) ? services : [];
+
   const chartButtons = [
     { id: 'ar-aging' as const, label: 'AR Aging' },
     { id: 'margin-variance' as const, label: 'Margin Variance' },
@@ -119,12 +123,12 @@ export function ARAgingChart() {
 
   // Process API data for charts
   const processedArAgingData = useMemo(() => {
-    if (!arAging || arAging.length === 0) {
+    if (arAgingData.length === 0) {
       return MOCK_AR_AGING; // fallback to centralized mock data
     }
     
     // Get the latest AR aging record and transform bucket data into chart format
-    const latestAging = arAging[0]; // Assuming sorted by date desc
+    const latestAging = arAgingData[0]; // Assuming sorted by date desc
     const bucket030 = parseFloat(latestAging.bucket030 || '0');
     const bucket3160 = parseFloat(latestAging.bucket3160 || '0');
     const bucket6190 = parseFloat(latestAging.bucket6190 || '0');
@@ -154,17 +158,17 @@ export function ARAgingChart() {
         amount: bucket90plus 
       }
     ];
-  }, [arAging]);
+  }, [arAgingData]);
 
   const processedMarginVarianceData = useMemo(() => {
-    if (!marginVariance || marginVariance.length === 0) {
+    if (marginVarianceData.length === 0) {
       return MOCK_MARGIN_VARIANCE; // fallback to centralized mock data
     }
     
     // Group margin variance data by month and calculate averages
     const monthlyData: { [key: string]: { actualSum: number, bidSum: number, count: number } } = {};
     
-    marginVariance.forEach((item: any) => {
+    marginVarianceData.forEach((item: any) => {
       const date = new Date(item.date);
       const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
       
@@ -190,20 +194,20 @@ export function ARAgingChart() {
         const dateB = new Date(b.month + ' 2025');
         return dateA.getTime() - dateB.getTime();
       });
-  }, [marginVariance]);
+  }, [marginVarianceData]);
 
   const processedServiceMixData = useMemo(() => {
-    if (!services || services.length === 0) {
+    if (servicesData.length === 0) {
       return MOCK_SERVICE_MIX; // fallback to centralized mock data
     }
     
     const colors = ['#22c55e', '#60a5fa', '#f59e0b', '#a78bfa', '#ef4444'];
-    return services.map((service: any, index: number) => ({
+    return servicesData.map((service: any, index: number) => ({
       name: service.name,
       value: service.percentage || Math.floor(Math.random() * 30) + 10,
       color: colors[index % colors.length]
     }));
-  }, [services]);
+  }, [servicesData]);
 
   const renderChart = () => {
     switch (activeChart) {
