@@ -1727,15 +1727,15 @@ export default function DataInput() {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuItem asChild>
+              <DropdownMenuContent align="start" className="w-48 bg-neutral-900 border-neutral-700 text-white">
+                <DropdownMenuItem asChild className="hover:bg-emerald-500/20 hover:text-emerald-100 focus:bg-emerald-500/20 focus:text-emerald-100">
                   <Link href="/" className="flex items-center gap-2 w-full">
                     <BarChart3 className="h-4 w-4" />
                     <span>Dashboard</span>
                     {location === "/" && <div className="ml-auto w-2 h-2 bg-primary rounded-full" />}
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="hover:bg-emerald-500/20 hover:text-emerald-100 focus:bg-emerald-500/20 focus:text-emerald-100">
                   <Link href="/data-input" className="flex items-center gap-2 w-full">
                     <Plus className="h-4 w-4" />
                     <span>Data Entry</span>

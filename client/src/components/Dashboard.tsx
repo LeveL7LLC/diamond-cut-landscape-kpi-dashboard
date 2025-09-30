@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle, Bell, TrendingUp, Target, BarChart3, Plus } from 'lucide-react';
+import { DollarSign, PhoneCall, CalendarCheck2, ClipboardCheck, Banknote, Receipt, AlertTriangle, Bell, TrendingUp, Target, BarChart3, Plus, Database } from 'lucide-react';
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import KpiTile from './KpiTile';
 import Thermometer from './Thermometer';
 import ProfitWidget from './ProfitWidget';
@@ -44,6 +44,10 @@ export default function Dashboard() {
   });
 
   const [showAlerts, setShowAlerts] = useState(false);
+  
+  // Navigation menu state for mobile-friendly behavior
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isNavHovered, setIsNavHovered] = useState(false);
 
   // State for dropdown selections
   const [selectedLeadSources, setSelectedLeadSources] = useState(LEAD_SOURCES_OPTIONS.map(opt => opt.value));
@@ -195,13 +199,55 @@ export default function Dashboard() {
     </div>
   );
 
+  // Navigation menu handlers for mobile-friendly behavior
+  useEffect(() => {
+    let hoverTimeout: NodeJS.Timeout;
+    
+    if (isNavHovered) {
+      setIsNavOpen(true);
+    } else {
+      // Delay closing to allow moving to the popover content
+      hoverTimeout = setTimeout(() => {
+        setIsNavOpen(false);
+      }, 150);
+    }
+
+    return () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+    };
+  }, [isNavHovered]);
+
+  const handleNavMouseEnter = () => {
+    setIsNavHovered(true);
+  };
+
+  const handleNavMouseLeave = () => {
+    setIsNavHovered(false);
+  };
+
+  const handleNavClick = () => {
+    setIsNavOpen(!isNavOpen);
+  };
+
+  const handleNavLinkClick = () => {
+    setIsNavOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <div className="flex items-center gap-3 sm:gap-4 cursor-pointer hover-elevate p-2 rounded-lg" data-testid="nav-logo-trigger">
+        <Popover open={isNavOpen} onOpenChange={setIsNavOpen}>
+          <PopoverTrigger asChild>
+            <div 
+              className="flex items-center gap-3 sm:gap-4 cursor-pointer hover-elevate p-2 rounded-lg" 
+              data-testid="nav-logo-trigger"
+              onMouseEnter={handleNavMouseEnter}
+              onMouseLeave={handleNavMouseLeave}
+              onClick={handleNavClick}
+            >
               <img 
                 src={logoPath} 
                 alt="Diamond Cut Landscape Logo" 
@@ -212,14 +258,21 @@ export default function Dashboard() {
                 <p className="text-xs sm:text-sm text-muted-foreground">Executive Dashboard</p>
               </div>
             </div>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-48 p-2" side="bottom" align="start">
+          </PopoverTrigger>
+          <PopoverContent 
+            className="w-48 p-2 bg-neutral-900 border-neutral-700 text-white" 
+            side="bottom" 
+            align="start"
+            onMouseEnter={handleNavMouseEnter}
+            onMouseLeave={handleNavMouseLeave}
+          >
             <div className="flex flex-col gap-1">
               <Link href="/">
                 <Button 
                   variant={location === "/" ? "default" : "ghost"}
-                  className="w-full justify-start flex items-center gap-2"
+                  className="w-full justify-start flex items-center gap-2 hover:bg-emerald-500/20 hover:text-emerald-100"
                   data-testid="nav-dashboard"
+                  onClick={handleNavLinkClick}
                 >
                   <BarChart3 className="h-4 w-4" />
                   Dashboard
@@ -229,16 +282,17 @@ export default function Dashboard() {
               <Link href="/data-input">
                 <Button 
                   variant={location === "/data-input" ? "default" : "ghost"}
-                  className="w-full justify-start flex items-center gap-2"
+                  className="w-full justify-start flex items-center gap-2 hover:bg-emerald-500/20 hover:text-emerald-100"
                   data-testid="nav-data-input"
+                  onClick={handleNavLinkClick}
                 >
                   <Plus className="h-4 w-4" />
                   Data Entry
                 </Button>
               </Link>
             </div>
-          </HoverCardContent>
-        </HoverCard>
+          </PopoverContent>
+        </Popover>
         
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
