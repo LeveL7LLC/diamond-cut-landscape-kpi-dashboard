@@ -28,6 +28,7 @@ PORT=5000
 ```
 
 **Replace `your_password` with your actual PostgreSQL password for the level7 user.**
+**Replace the PORT value with the port number your application is running on (default is 5000).**
 
 ### Step 3: Run Database Setup Commands
 
