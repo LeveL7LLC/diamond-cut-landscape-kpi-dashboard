@@ -1198,8 +1198,8 @@ export default function DataInput() {
       resolver: zodResolver(insertCustomerConcernsSchema),
       defaultValues: {
         date: new Date().toISOString().split('T')[0],
-        concern: "",
-        count: 0,
+        description: "",
+        priority: "Med",
         serviceId: ""
       },
     });
@@ -1334,12 +1334,12 @@ export default function DataInput() {
                     />
                     <FormField
                       control={customerConcernsForm.control}
-                      name="concern"
+                      name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Concern</FormLabel>
+                          <FormLabel>Description</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Pricing, Quality, Timeline" {...field} data-testid="input-concerns-concern" />
+                            <Input placeholder="e.g., Pricing concerns, Quality issues, Timeline delays" {...field} data-testid="input-concerns-description" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1347,18 +1347,21 @@ export default function DataInput() {
                     />
                     <FormField
                       control={customerConcernsForm.control}
-                      name="count"
+                      name="priority"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Count</FormLabel>
+                          <FormLabel>Priority</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="number" 
-                              min="0"
-                              {...field} 
-                              onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                              data-testid="input-concerns-count"
-                            />
+                            <select 
+                              value={field.value} 
+                              onChange={field.onChange}
+                              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              data-testid="input-concerns-priority"
+                            >
+                              <option value="Low">Low</option>
+                              <option value="Med">Med</option>
+                              <option value="High">High</option>
+                            </select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>

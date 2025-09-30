@@ -146,6 +146,9 @@ export interface IStorage {
   createAnnualRevenue(annualRevenue: InsertAnnualRevenue): Promise<AnnualRevenue>;
   updateAnnualRevenue(id: string, annualRevenue: Partial<InsertAnnualRevenue>): Promise<AnnualRevenue | undefined>;
   deleteAnnualRevenue(id: string): Promise<boolean>;
+
+  // Global Search
+  globalSearch(searchTerm: string): Promise<any[]>;
 }
 
 import { db } from './db';
@@ -156,7 +159,7 @@ import {
   salesGoals, weeklyCapacity, pipelineSnapshots,
   monthlyRevenue, annualRevenue
 } from '@shared/schema';
-import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, or, ilike } from 'drizzle-orm';
 
 export class DatabaseStorage implements IStorage {
   // User operations
@@ -428,47 +431,242 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async getArAging(): Promise<ArAging[]> { return []; }
-  async getLatestArAging(): Promise<ArAging | undefined> { return undefined; }
-  async createArAging(arAging: InsertArAging): Promise<ArAging> { throw new Error('Not implemented'); }
-  async updateArAging(id: string, arAging: Partial<InsertArAging>): Promise<ArAging | undefined> { return undefined; }
-  async deleteArAging(id: string): Promise<boolean> { return false; }
+  // AR Aging operations
+  async getArAging(): Promise<ArAging[]> {
+    return await db.select().from(arAging).orderBy(desc(arAging.asOf));
+  }
 
-  async getMarginVariance(): Promise<MarginVariance[]> { return []; }
-  async getMarginVarianceInRange(startDate: string, endDate: string): Promise<MarginVariance[]> { return []; }
-  async createMarginVariance(marginVariance: InsertMarginVariance): Promise<MarginVariance> { throw new Error('Not implemented'); }
-  async updateMarginVariance(id: string, marginVariance: Partial<InsertMarginVariance>): Promise<MarginVariance | undefined> { return undefined; }
-  async deleteMarginVariance(id: string): Promise<boolean> { return false; }
+  async getLatestArAging(): Promise<ArAging | undefined> {
+    const [latest] = await db.select().from(arAging).orderBy(desc(arAging.asOf)).limit(1);
+    return latest || undefined;
+  }
 
-  async getCustomerConcerns(): Promise<CustomerConcerns[]> { return []; }
-  async getOpenCustomerConcerns(): Promise<CustomerConcerns[]> { return []; }
-  async createCustomerConcerns(customerConcerns: InsertCustomerConcerns): Promise<CustomerConcerns> { throw new Error('Not implemented'); }
-  async updateCustomerConcerns(id: string, customerConcerns: Partial<InsertCustomerConcerns>): Promise<CustomerConcerns | undefined> { return undefined; }
-  async deleteCustomerConcerns(id: string): Promise<boolean> { return false; }
+  async createArAging(insertArAging: InsertArAging): Promise<ArAging> {
+    const [aging] = await db.insert(arAging).values(insertArAging).returning();
+    return aging;
+  }
 
-  async getSalesGoals(): Promise<SalesGoals[]> { return []; }
-  async getSalesGoalsByPeriod(period: string): Promise<SalesGoals[]> { return []; }
-  async createSalesGoals(salesGoals: InsertSalesGoals): Promise<SalesGoals> { throw new Error('Not implemented'); }
-  async updateSalesGoals(id: string, salesGoals: Partial<InsertSalesGoals>): Promise<SalesGoals | undefined> { return undefined; }
-  async deleteSalesGoals(id: string): Promise<boolean> { return false; }
+  async updateArAging(id: string, updateData: Partial<InsertArAging>): Promise<ArAging | undefined> {
+    const [aging] = await db.update(arAging).set(updateData).where(eq(arAging.id, id)).returning();
+    return aging || undefined;
+  }
 
-  async getWeeklyCapacity(): Promise<WeeklyCapacity[]> { return []; }
-  async getWeeklyCapacityInRange(startDate: string, endDate: string): Promise<WeeklyCapacity[]> { return []; }
-  async createWeeklyCapacity(weeklyCapacity: InsertWeeklyCapacity): Promise<WeeklyCapacity> { throw new Error('Not implemented'); }
-  async updateWeeklyCapacity(id: string, weeklyCapacity: Partial<InsertWeeklyCapacity>): Promise<WeeklyCapacity | undefined> { return undefined; }
-  async deleteWeeklyCapacity(id: string): Promise<boolean> { return false; }
+  async deleteArAging(id: string): Promise<boolean> {
+    const result = await db.delete(arAging).where(eq(arAging.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
 
-  async getMonthlyRevenue(): Promise<MonthlyRevenue[]> { return []; }
-  async getMonthlyRevenueByPeriod(month: string): Promise<MonthlyRevenue[]> { return []; }
-  async createMonthlyRevenue(monthlyRevenue: InsertMonthlyRevenue): Promise<MonthlyRevenue> { throw new Error('Not implemented'); }
-  async updateMonthlyRevenue(id: string, monthlyRevenue: Partial<InsertMonthlyRevenue>): Promise<MonthlyRevenue | undefined> { return undefined; }
-  async deleteMonthlyRevenue(id: string): Promise<boolean> { return false; }
+  // Margin Variance operations
+  async getMarginVariance(): Promise<MarginVariance[]> {
+    return await db.select().from(marginVariance).orderBy(desc(marginVariance.date));
+  }
 
-  async getAnnualRevenue(): Promise<AnnualRevenue[]> { return []; }
-  async getAnnualRevenueByYear(year: number): Promise<AnnualRevenue[]> { return []; }
-  async createAnnualRevenue(annualRevenue: InsertAnnualRevenue): Promise<AnnualRevenue> { throw new Error('Not implemented'); }
-  async updateAnnualRevenue(id: string, annualRevenue: Partial<InsertAnnualRevenue>): Promise<AnnualRevenue | undefined> { return undefined; }
-  async deleteAnnualRevenue(id: string): Promise<boolean> { return false; }
+  async getMarginVarianceInRange(startDate: string, endDate: string): Promise<MarginVariance[]> {
+    return await db.select().from(marginVariance)
+      .where(and(gte(marginVariance.date, startDate), lte(marginVariance.date, endDate)))
+      .orderBy(desc(marginVariance.date));
+  }
+
+  async createMarginVariance(insertMarginVariance: InsertMarginVariance): Promise<MarginVariance> {
+    const [variance] = await db.insert(marginVariance).values(insertMarginVariance).returning();
+    return variance;
+  }
+
+  async updateMarginVariance(id: string, updateData: Partial<InsertMarginVariance>): Promise<MarginVariance | undefined> {
+    const [variance] = await db.update(marginVariance).set(updateData).where(eq(marginVariance.id, id)).returning();
+    return variance || undefined;
+  }
+
+  async deleteMarginVariance(id: string): Promise<boolean> {
+    const result = await db.delete(marginVariance).where(eq(marginVariance.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Customer Concerns operations
+  async getCustomerConcerns(): Promise<CustomerConcerns[]> {
+    return await db.select().from(customerConcerns).orderBy(desc(customerConcerns.date));
+  }
+
+  async getOpenCustomerConcerns(): Promise<CustomerConcerns[]> {
+    return await db.select().from(customerConcerns)
+      .where(eq(customerConcerns.priority, 'High'))
+      .orderBy(desc(customerConcerns.date));
+  }
+
+  async createCustomerConcerns(insertCustomerConcerns: InsertCustomerConcerns): Promise<CustomerConcerns> {
+    const [concern] = await db.insert(customerConcerns).values(insertCustomerConcerns).returning();
+    return concern;
+  }
+
+  async updateCustomerConcerns(id: string, updateData: Partial<InsertCustomerConcerns>): Promise<CustomerConcerns | undefined> {
+    const [concern] = await db.update(customerConcerns).set(updateData).where(eq(customerConcerns.id, id)).returning();
+    return concern || undefined;
+  }
+
+  async deleteCustomerConcerns(id: string): Promise<boolean> {
+    const result = await db.delete(customerConcerns).where(eq(customerConcerns.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Sales Goals operations
+  async getSalesGoals(): Promise<SalesGoals[]> {
+    return await db.select().from(salesGoals).orderBy(desc(salesGoals.period));
+  }
+
+  async getSalesGoalsByPeriod(period: string): Promise<SalesGoals[]> {
+    return await db.select().from(salesGoals)
+      .where(eq(salesGoals.period, period))
+      .orderBy(desc(salesGoals.period));
+  }
+
+  async createSalesGoals(insertSalesGoals: InsertSalesGoals): Promise<SalesGoals> {
+    const [goal] = await db.insert(salesGoals).values(insertSalesGoals).returning();
+    return goal;
+  }
+
+  async updateSalesGoals(id: string, updateData: Partial<InsertSalesGoals>): Promise<SalesGoals | undefined> {
+    const [goal] = await db.update(salesGoals).set(updateData).where(eq(salesGoals.id, id)).returning();
+    return goal || undefined;
+  }
+
+  async deleteSalesGoals(id: string): Promise<boolean> {
+    const result = await db.delete(salesGoals).where(eq(salesGoals.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Weekly Capacity operations
+  async getWeeklyCapacity(): Promise<WeeklyCapacity[]> {
+    return await db.select().from(weeklyCapacity).orderBy(desc(weeklyCapacity.weekStarting));
+  }
+
+  async getWeeklyCapacityInRange(startDate: string, endDate: string): Promise<WeeklyCapacity[]> {
+    return await db.select().from(weeklyCapacity)
+      .where(and(gte(weeklyCapacity.weekStarting, startDate), lte(weeklyCapacity.weekStarting, endDate)))
+      .orderBy(desc(weeklyCapacity.weekStarting));
+  }
+
+  async createWeeklyCapacity(insertWeeklyCapacity: InsertWeeklyCapacity): Promise<WeeklyCapacity> {
+    const [capacity] = await db.insert(weeklyCapacity).values(insertWeeklyCapacity).returning();
+    return capacity;
+  }
+
+  async updateWeeklyCapacity(id: string, updateData: Partial<InsertWeeklyCapacity>): Promise<WeeklyCapacity | undefined> {
+    const [capacity] = await db.update(weeklyCapacity).set(updateData).where(eq(weeklyCapacity.id, id)).returning();
+    return capacity || undefined;
+  }
+
+  async deleteWeeklyCapacity(id: string): Promise<boolean> {
+    const result = await db.delete(weeklyCapacity).where(eq(weeklyCapacity.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Monthly Revenue operations
+  async getMonthlyRevenue(): Promise<MonthlyRevenue[]> {
+    return await db.select().from(monthlyRevenue).orderBy(desc(monthlyRevenue.month));
+  }
+
+  async getMonthlyRevenueByPeriod(month: string): Promise<MonthlyRevenue[]> {
+    return await db.select().from(monthlyRevenue)
+      .where(eq(monthlyRevenue.month, month))
+      .orderBy(desc(monthlyRevenue.month));
+  }
+
+  async createMonthlyRevenue(insertMonthlyRevenue: InsertMonthlyRevenue): Promise<MonthlyRevenue> {
+    const [revenue] = await db.insert(monthlyRevenue).values(insertMonthlyRevenue).returning();
+    return revenue;
+  }
+
+  async updateMonthlyRevenue(id: string, updateData: Partial<InsertMonthlyRevenue>): Promise<MonthlyRevenue | undefined> {
+    const [revenue] = await db.update(monthlyRevenue).set(updateData).where(eq(monthlyRevenue.id, id)).returning();
+    return revenue || undefined;
+  }
+
+  async deleteMonthlyRevenue(id: string): Promise<boolean> {
+    const result = await db.delete(monthlyRevenue).where(eq(monthlyRevenue.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Annual Revenue operations
+  async getAnnualRevenue(): Promise<AnnualRevenue[]> {
+    return await db.select().from(annualRevenue).orderBy(desc(annualRevenue.year));
+  }
+
+  async getAnnualRevenueByYear(year: number): Promise<AnnualRevenue[]> {
+    return await db.select().from(annualRevenue)
+      .where(eq(annualRevenue.year, year))
+      .orderBy(desc(annualRevenue.year));
+  }
+
+  async createAnnualRevenue(insertAnnualRevenue: InsertAnnualRevenue): Promise<AnnualRevenue> {
+    const [revenue] = await db.insert(annualRevenue).values(insertAnnualRevenue).returning();
+    return revenue;
+  }
+
+  async updateAnnualRevenue(id: string, updateData: Partial<InsertAnnualRevenue>): Promise<AnnualRevenue | undefined> {
+    const [revenue] = await db.update(annualRevenue).set(updateData).where(eq(annualRevenue.id, id)).returning();
+    return revenue || undefined;
+  }
+
+  async deleteAnnualRevenue(id: string): Promise<boolean> {
+    const result = await db.delete(annualRevenue).where(eq(annualRevenue.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Global Search implementation
+  async globalSearch(searchTerm: string): Promise<any[]> {
+    const results: any[] = [];
+    const term = `%${searchTerm.toLowerCase()}%`;
+
+    try {
+      // Search Lead Sources
+      const leadSourceResults = await db.select().from(leadSources)
+        .where(or(
+          ilike(leadSources.name, term),
+          ilike(leadSources.value, term)
+        ));
+      results.push(...leadSourceResults.map(item => ({ ...item, _table: 'Lead Sources', _type: 'core-entities' })));
+
+      // Search CSRs
+      const csrResults = await db.select().from(csrs)
+        .where(or(
+          ilike(csrs.name, term),
+          ilike(csrs.value, term)
+        ));
+      results.push(...csrResults.map(item => ({ ...item, _table: 'CSRs', _type: 'core-entities' })));
+
+      // Search Sales Reps
+      const salesRepResults = await db.select().from(salesReps)
+        .where(or(
+          ilike(salesReps.name, term),
+          ilike(salesReps.value, term)
+        ));
+      results.push(...salesRepResults.map(item => ({ ...item, _table: 'Sales Reps', _type: 'core-entities' })));
+
+      // Search Services
+      const serviceResults = await db.select().from(services)
+        .where(or(
+          ilike(services.name, term),
+          ilike(services.value, term)
+        ));
+      results.push(...serviceResults.map(item => ({ ...item, _table: 'Services', _type: 'core-entities' })));
+
+      // Search Customer Concerns
+      const concernResults = await db.select().from(customerConcerns)
+        .where(ilike(customerConcerns.description, term));
+      results.push(...concernResults.map(item => ({ ...item, _table: 'Customer Concerns', _type: 'analytics' })));
+
+      // Search Margin Variance (job names)
+      const marginResults = await db.select().from(marginVariance)
+        .where(ilike(marginVariance.jobName, term));
+      results.push(...marginResults.map(item => ({ ...item, _table: 'Margin Variance', _type: 'financial' })));
+
+      return results.slice(0, 50); // Limit to 50 results
+    } catch (error) {
+      console.error('Global search error:', error);
+      return [];
+    }
+  }
+
 }
 
 export const storage = new DatabaseStorage();

@@ -264,22 +264,136 @@ async function seedDatabase() {
     console.log("⚠️ Seeding customer concerns data...");
     const customerConcernsData = [];
     
-    for (let i = 0; i < 28; i++) {
-      const openedDate = new Date(today);
-      openedDate.setDate(today.getDate() - i);
-      const isOpen = Math.random() > 0.35;
+    const concernDescriptions = [
+      "Pricing concerns about landscape design",
+      "Quality issues with recent installation",
+      "Timeline delays on maintenance schedule",
+      "Communication gaps during project",
+      "Weather-related service delays",
+      "Equipment noise complaints",
+      "Billing discrepancy questions",
+      "Service scope clarification needed"
+    ];
+    
+    for (let i = 0; i < 17; i++) { // 17 total concerns to match dashboard
+      const concernDate = new Date(today);
+      concernDate.setDate(today.getDate() - Math.floor(Math.random() * 30)); // Last 30 days
       
       customerConcernsData.push({
-        openedAt: openedDate.toISOString(),
-        status: isOpen ? 'open' : 'resolved',
-        description: `Customer concern #${1000 + i}`,
-        priority: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
-        resolvedAt: isOpen ? null : new Date(openedDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+        date: concernDate.toISOString().split('T')[0],
+        description: concernDescriptions[i % concernDescriptions.length],
+        priority: ['Low', 'Med', 'High'][Math.floor(Math.random() * 3)],
+        serviceId: Math.random() > 0.5 ? insertedServices[Math.floor(Math.random() * insertedServices.length)].id : null
       });
     }
     
     await db.insert(customerConcerns).values(customerConcernsData);
     console.log(`✅ Inserted ${customerConcernsData.length} customer concerns records`);
+
+    // 15. Seed Margin Variance (last 20 jobs)
+    console.log("📊 Seeding margin variance data...");
+    const marginVarianceData = [];
+    
+    const jobNames = [
+      "Sunset Ridge Hardscape", "Oakwood Irrigation Install", "Pine Valley Lighting",
+      "Maple Street Pergola", "Cedar Park Water Feature", "Birch Lane Turf Install",
+      "Willow Creek Planting", "Elm Street Hardscape", "Aspen Heights Lighting",
+      "Redwood Gardens Irrigation", "Cypress Point Pergola", "Magnolia Drive Turf",
+      "Hickory Hills Planting", "Poplar Grove Hardscape", "Sycamore Court Lighting",
+      "Chestnut Ridge Water Feature", "Dogwood Lane Irrigation", "Spruce Valley Pergola",
+      "Juniper Park Turf", "Cottonwood Creek Planting"
+    ];
+    
+    for (let i = 0; i < 20; i++) {
+      const jobDate = new Date(today);
+      jobDate.setDate(today.getDate() - Math.floor(Math.random() * 60)); // Last 60 days
+      
+      const bidMargin = (Math.random() * 15 + 25).toFixed(2); // 25-40% bid margin
+      const actualMargin = (parseFloat(bidMargin) + (Math.random() * 10 - 5)).toFixed(2); // ±5% variance
+      
+      marginVarianceData.push({
+        date: jobDate.toISOString().split('T')[0],
+        jobName: jobNames[i],
+        bidMargin: bidMargin,
+        actualMargin: Math.max(0, parseFloat(actualMargin)).toFixed(2), // Ensure non-negative
+        serviceId: insertedServices[Math.floor(Math.random() * insertedServices.length)].id
+      });
+    }
+    
+    await db.insert(marginVariance).values(marginVarianceData);
+    console.log(`✅ Inserted ${marginVarianceData.length} margin variance records`);
+
+    // 16. Seed Pipeline Snapshots (daily for last 30 days)
+    console.log("🔄 Seeding pipeline snapshots data...");
+    const pipelineSnapshotsData = [];
+    const stages = ["leads", "qualified", "quoted", "closed"];
+    
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      let cumulativeValue = 0;
+      stages.forEach((stage, index) => {
+        let stageValue;
+        if (stage === "leads") {
+          stageValue = Math.random() * 200000 + 800000; // $800k-$1M in leads
+        } else if (stage === "qualified") {
+          stageValue = cumulativeValue * (0.6 + Math.random() * 0.2); // 60-80% of previous
+        } else if (stage === "quoted") {
+          stageValue = cumulativeValue * (0.4 + Math.random() * 0.2); // 40-60% of previous
+        } else { // closed
+          stageValue = cumulativeValue * (0.2 + Math.random() * 0.15); // 20-35% of previous
+        }
+        
+        cumulativeValue = stageValue;
+        
+        pipelineSnapshotsData.push({
+          date: dateStr,
+          stage: stage,
+          value: stageValue.toFixed(2)
+        });
+      });
+    }
+    
+    await db.insert(pipelineSnapshots).values(pipelineSnapshotsData);
+    console.log(`✅ Inserted ${pipelineSnapshotsData.length} pipeline snapshots records`);
+
+    // 17. Seed Monthly Revenue (last 12 months)
+    console.log("💰 Seeding monthly revenue data...");
+    const monthlyRevenueData = [];
+    
+    for (let i = 0; i < 12; i++) {
+      const month = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const monthStr = month.toISOString().split('T')[0];
+      
+      // Company total
+      const companyGoal = 450000 + Math.random() * 100000; // $450k-$550k goal
+      const companyActual = companyGoal * (0.8 + Math.random() * 0.4); // 80-120% of goal
+      
+      monthlyRevenueData.push({
+        month: monthStr,
+        goalAmount: companyGoal.toFixed(2),
+        actualAmount: companyActual.toFixed(2),
+        salesRepId: null // Company total
+      });
+      
+      // Individual sales rep data
+      insertedSalesReps.forEach(rep => {
+        const repGoal = 112500 + Math.random() * 25000; // ~$112k-$137k per rep
+        const repActual = repGoal * (0.7 + Math.random() * 0.6); // 70-130% of goal
+        
+        monthlyRevenueData.push({
+          month: monthStr,
+          goalAmount: repGoal.toFixed(2),
+          actualAmount: repActual.toFixed(2),
+          salesRepId: rep.id
+        });
+      });
+    }
+    
+    await db.insert(monthlyRevenue).values(monthlyRevenueData);
+    console.log(`✅ Inserted ${monthlyRevenueData.length} monthly revenue records`);
 
     console.log("🎉 Database seeding completed successfully!");
     
@@ -289,17 +403,16 @@ async function seedDatabase() {
   }
 }
 
-// Run the seeding if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  seedDatabase()
-    .then(() => {
-      console.log("✅ Seeding completed");
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error("❌ Seeding failed:", error);
-      process.exit(1);
-    });
-}
+// Run the seeding when this file is executed directly
+console.log("🚀 Starting database seeding process...");
+seedDatabase()
+  .then(() => {
+    console.log("✅ Seeding completed successfully!");
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error("❌ Seeding failed:", error);
+    process.exit(1);
+  });
 
 export { seedDatabase };

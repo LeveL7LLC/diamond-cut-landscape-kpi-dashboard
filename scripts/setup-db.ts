@@ -17,37 +17,17 @@ if (!DATABASE_URL) {
 
 async function setupDatabase() {
   console.log('🚀 Setting up PostgreSQL database...');
-
-  // Parse the DATABASE_URL to get connection details
-  const url = new URL(DATABASE_URL);
-  const adminConnectionString = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/postgres`;
-
-  // First, connect to postgres database to create our target database
-  const adminPool = new Pool({
-    connectionString: adminConnectionString
-  });
+  console.log(`📍 Connecting to database: ${DB_NAME}`);
 
   try {
-    // Check if database exists
-    const dbCheckResult = await adminPool.query(
-      'SELECT 1 FROM pg_database WHERE datname = $1',
-      [DB_NAME]
-    );
-
-    if (dbCheckResult.rows.length === 0) {
-      console.log(`📦 Creating database: ${DB_NAME}`);
-      await adminPool.query(`CREATE DATABASE "${DB_NAME}"`);
-      console.log('✅ Database created successfully!');
-    } else {
-      console.log(`✅ Database ${DB_NAME} already exists.`);
-    }
-
-    await adminPool.end();
-
-    // Now connect to our target database to set up extensions
+    // Connect directly to the target database (assumes it already exists)
     const targetPool = new Pool({
       connectionString: DATABASE_URL
     });
+
+    // Test connection
+    await targetPool.query('SELECT 1');
+    console.log(`✅ Successfully connected to database: ${DB_NAME}`);
 
     console.log('🔧 Setting up database extensions...');
     
@@ -62,15 +42,20 @@ async function setupDatabase() {
     await targetPool.end();
 
     console.log('🎉 Database setup completed successfully!');
-    console.log(`📍 Connection string: postgresql://${url.username}:***@${url.hostname}:${url.port}/${DB_NAME}`);
     console.log('');
     console.log('Next steps:');
     console.log('1. Run: npm run db:generate  # Generate migrations');
     console.log('2. Run: npm run db:push     # Push schema to database');
-    console.log('3. Run: npm run dev         # Start the development server');
+    console.log('3. Run: npm run db:seed     # Add sample data');
+    console.log('4. Run: npm run dev         # Start the development server');
 
   } catch (error) {
     console.error('❌ Database setup failed:', error);
+    console.log('');
+    console.log('🔧 Make sure:');
+    console.log(`1. Database "${DB_NAME}" exists in your Opalstack control panel`);
+    console.log('2. Your DATABASE_URL is correct');
+    console.log('3. The level7 user has access to the dcl-dashboard database');
     process.exit(1);
   }
 }

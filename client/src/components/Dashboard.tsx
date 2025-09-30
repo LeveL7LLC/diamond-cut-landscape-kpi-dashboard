@@ -198,18 +198,18 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <HoverCard>
           <HoverCardTrigger asChild>
-            <div className="flex items-center gap-4 cursor-pointer hover-elevate p-2 rounded-lg" data-testid="nav-logo-trigger">
+            <div className="flex items-center gap-3 sm:gap-4 cursor-pointer hover-elevate p-2 rounded-lg" data-testid="nav-logo-trigger">
               <img 
                 src={logoPath} 
                 alt="Diamond Cut Landscape Logo" 
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
               <div>
-                <h1 className="text-2xl font-bold">Diamond Cut Landscape</h1>
-                <p className="text-sm text-muted-foreground">Executive Dashboard</p>
+                <h1 className="text-xl sm:text-2xl font-bold">Diamond Cut Landscape</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">Executive Dashboard</p>
               </div>
             </div>
           </HoverCardTrigger>
@@ -240,40 +240,42 @@ export default function Dashboard() {
           </HoverCardContent>
         </HoverCard>
         
-        <div className="flex items-center gap-4">
-          <DateRangeSelector range={dateRange} setRange={setDateRange} />
-          
-          {/* Alert Notification Bell */}
-          <div className="relative">
-            <button
-              onClick={() => setShowAlerts(!showAlerts)}
-              className="p-2 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors relative"
-              data-testid="button-alerts"
-            >
-              <Bell className="w-4 h-4" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full flex items-center justify-center">
-                <span className="text-xs text-white font-medium">2</span>
-              </div>
-            </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
+            <DateRangeSelector range={dateRange} setRange={setDateRange} />
             
-            {showAlerts && (
-              <div className="absolute right-0 top-12 w-80 bg-card border border-card-border rounded-lg shadow-lg p-4 z-50">
-                <div className="text-sm font-medium mb-3">Active Alerts</div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm p-2 rounded bg-muted/20">
-                    <div className="w-2 h-2 bg-chart-3 rounded-full"></div>
-                    <span>Pipeline schedule: 35% late</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm p-2 rounded bg-muted/20">
-                    <div className="w-2 h-2 bg-destructive rounded-full"></div>
-                    <span>Payment difference: 65% late</span>
+            {/* Alert Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setShowAlerts(!showAlerts)}
+                className="p-2 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors relative"
+                data-testid="button-alerts"
+              >
+                <Bell className="w-4 h-4" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full flex items-center justify-center">
+                  <span className="text-xs text-white font-medium">2</span>
+                </div>
+              </button>
+              
+              {showAlerts && (
+                <div className="absolute right-0 top-12 w-80 bg-card border border-card-border rounded-lg shadow-lg p-4 z-50">
+                  <div className="text-sm font-medium mb-3">Active Alerts</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm p-2 rounded bg-muted/20">
+                      <div className="w-2 h-2 bg-chart-3 rounded-full"></div>
+                      <span>Pipeline schedule: 35% late</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm p-2 rounded bg-muted/20">
+                      <div className="w-2 h-2 bg-destructive rounded-full"></div>
+                      <span>Payment difference: 65% late</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
             Updated {new Date().toLocaleTimeString()}
           </div>
         </div>
@@ -308,7 +310,7 @@ export default function Dashboard() {
               return MOCK_KPI_VALUES.bookingRate;
             }
             const totalLeads = dailyLeads.reduce((sum: number, item: any) => sum + item.count, 0);
-            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.count, 0);
+            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.appointments, 0);
             const rate = totalLeads > 0 ? Math.round((totalBookings / totalLeads) * 100) : 0;
             return `${rate}%`;
           })()}
@@ -327,8 +329,8 @@ export default function Dashboard() {
             if (!dailyBookings || !dailyCloses || dailyBookings.length === 0 || dailyCloses.length === 0) {
               return MOCK_KPI_VALUES.closeRate;
             }
-            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.count, 0);
-            const totalCloses = dailyCloses.reduce((sum: number, item: any) => sum + item.count, 0);
+            const totalBookings = dailyBookings.reduce((sum: number, item: any) => sum + item.appointments, 0);
+            const totalCloses = dailyCloses.reduce((sum: number, item: any) => sum + item.signed, 0);
             const rate = totalBookings > 0 ? Math.round((totalCloses / totalBookings) * 100) : 0;
             return `${rate}%`;
           })()}
@@ -347,8 +349,8 @@ export default function Dashboard() {
             if (!dailyContracts || dailyContracts.length === 0) {
               return MOCK_KPI_VALUES.avgContractValue;
             }
-            const totalValue = dailyContracts.reduce((sum: number, item: any) => sum + (item.value || 0), 0);
-            const totalCount = dailyContracts.reduce((sum: number, item: any) => sum + item.count, 0);
+            const totalValue = dailyContracts.reduce((sum: number, item: any) => sum + parseFloat(item.amount || '0'), 0);
+            const totalCount = dailyContracts.length;
             const avgValue = totalCount > 0 ? Math.round(totalValue / totalCount) : 0;
             return `$${avgValue.toLocaleString()}`;
           })()}
@@ -386,7 +388,7 @@ export default function Dashboard() {
                 sum + parseFloat(entry.grossProfitPercent || '0'), 0
               );
               const averageGrossProfit = totalGrossProfit / currentMonthEntries.length;
-              return averageGrossProfit / 100; // Convert percentage to decimal
+              return averageGrossProfit; // Data is already in decimal format (0.48 = 48%)
             })()}
             mom={(() => {
               if (!monthlyFinance || monthlyFinance.length === 0) {
@@ -410,7 +412,7 @@ export default function Dashboard() {
               const previousAvg = previousMonthEntries.reduce((sum, entry) => 
                 sum + parseFloat(entry.grossProfitPercent || '0'), 0) / previousMonthEntries.length;
               
-              return (currentAvg - previousAvg) / 100; // Convert to decimal change
+              return (currentAvg - previousAvg); // Data is already in decimal format
             })()}
             data-testid="profit-gross"
           />
@@ -437,7 +439,7 @@ export default function Dashboard() {
                 sum + parseFloat(entry.netProfitPercent || '0'), 0
               );
               const averageNetProfit = totalNetProfit / currentMonthEntries.length;
-              return averageNetProfit / 100; // Convert percentage to decimal
+              return averageNetProfit; // Data is already in decimal format (0.16 = 16%)
             })()}
             mom={(() => {
               if (!monthlyFinance || monthlyFinance.length === 0) {
@@ -461,7 +463,7 @@ export default function Dashboard() {
               const previousAvg = previousMonthEntries.reduce((sum, entry) => 
                 sum + parseFloat(entry.netProfitPercent || '0'), 0) / previousMonthEntries.length;
               
-              return (currentAvg - previousAvg) / 100; // Convert to decimal change
+              return (currentAvg - previousAvg); // Data is already in decimal format
             })()}
             data-testid="profit-net"
           />
@@ -473,16 +475,19 @@ export default function Dashboard() {
             <div className="text-sm text-muted-foreground mb-2">September Revenue</div>
             <div className="text-lg font-semibold text-foreground mb-2">
               {(() => {
-                // Check if database has monthly revenue data
-                if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                // Check if database has sales goals data (this matches the Analytics > Goals tab)
+                if (!salesGoals || salesGoals.length === 0) {
                   const current = (MOCK_MONTHLY_REVENUE.currentRevenue / 1000).toFixed(0);
                   const goal = (MOCK_MONTHLY_REVENUE.goal / 1000).toFixed(0);
                   return `$${current}k / $${goal}k`;
                 }
-                // Calculate from database data
-                const latestMonth = monthlyRevenue[monthlyRevenue.length - 1];
-                const current = ((latestMonth?.revenue || 0) / 1000).toFixed(0);
-                const goal = ((latestMonth?.target || MOCK_MONTHLY_REVENUE.goal) / 1000).toFixed(0);
+                // Calculate from sales goals data - filter for current month (September 2025)
+                const currentMonth = new Date().toISOString().slice(0, 7); // "2025-09"
+                const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                const totalActual = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.actualAmount || '0'), 0);
+                const totalGoal = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.goalAmount || '0'), 0);
+                const current = (totalActual / 1000).toFixed(0);
+                const goal = (totalGoal / 1000).toFixed(0);
                 return `$${current}k / $${goal}k`;
               })()}
             </div>
@@ -492,18 +497,20 @@ export default function Dashboard() {
                 <span className="text-muted-foreground">Goal</span>
                 <span className="text-muted-foreground">
                   {(() => {
-                    if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                    if (!salesGoals || salesGoals.length === 0) {
                       return `$${(MOCK_MONTHLY_REVENUE.goal / 1000).toFixed(0)}k`;
                     }
-                    const latestMonth = monthlyRevenue[monthlyRevenue.length - 1];
-                    return `$${((latestMonth?.target || MOCK_MONTHLY_REVENUE.goal) / 1000).toFixed(0)}k`;
+                    const currentMonth = new Date().toISOString().slice(0, 7);
+                    const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                    const totalGoal = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.goalAmount || '0'), 0);
+                    return `$${(totalGoal / 1000).toFixed(0)}k`;
                   })()}
                 </span>
               </div>
               <div className="flex h-1.5 bg-muted/20 rounded-full overflow-hidden">
                 {(() => {
-                  // Check if database has sales rep data
-                  if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                  // Check if database has sales goals data
+                  if (!salesGoals || salesGoals.length === 0) {
                     // Use mock data percentages
                     const total = MOCK_MONTHLY_REVENUE.goal;
                     return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep, index) => (
@@ -514,22 +521,26 @@ export default function Dashboard() {
                       />
                     ));
                   }
-                  // Calculate from database data
-                  const latestMonth = monthlyRevenue[monthlyRevenue.length - 1];
-                  const total = latestMonth?.target || MOCK_MONTHLY_REVENUE.goal;
-                  return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep, index) => (
+                  
+                  // Calculate from sales goals data - filter for current month
+                  const currentMonth = new Date().toISOString().slice(0, 7);
+                  const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                  const totalRevenue = currentMonthGoals.reduce((sum, goal) => sum + parseFloat(goal.actualAmount || '0'), 0);
+                  const colors = ['primary', 'chart-2', 'chart-3', 'chart-4'];
+                  
+                  return currentMonthGoals.map((goal, index) => (
                     <div 
-                      key={rep.name}
-                      className={`bg-${rep.color} h-full`} 
-                      style={{ width: `${Math.round((rep.amount / total) * 100)}%` }}
+                      key={goal.id}
+                      className={`bg-${colors[index % colors.length]} h-full`} 
+                      style={{ width: `${Math.round((parseFloat(goal.actualAmount || '0') / totalRevenue) * 100)}%` }}
                     />
                   ));
                 })()}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-xs">
                 {(() => {
-                  // Check if database has sales rep data
-                  if (!monthlyRevenue || monthlyRevenue.length === 0) {
+                  // Check if database has sales goals data
+                  if (!salesGoals || salesGoals.length === 0 || !salesReps || salesReps.length === 0) {
                     return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep) => (
                       <div key={rep.name} className="flex items-center gap-1">
                         <div className={`w-1.5 h-1.5 bg-${rep.color} rounded-full`}></div>
@@ -537,13 +548,22 @@ export default function Dashboard() {
                       </div>
                     ));
                   }
-                  // Use database data if available, otherwise fallback to mock
-                  return MOCK_MONTHLY_REVENUE.salesRepContributions.map((rep) => (
-                    <div key={rep.name} className="flex items-center gap-1">
-                      <div className={`w-1.5 h-1.5 bg-${rep.color} rounded-full`}></div>
-                      <span>{rep.name}: ${(rep.amount / 1000).toFixed(0)}k</span>
-                    </div>
-                  ));
+                  
+                  // Use actual sales goals data - filter for current month
+                  const currentMonth = new Date().toISOString().slice(0, 7);
+                  const currentMonthGoals = salesGoals.filter(goal => goal.period.startsWith(currentMonth));
+                  const colors = ['primary', 'chart-2', 'chart-3', 'chart-4'];
+                  
+                  return currentMonthGoals.map((goalData, index) => {
+                    const salesRep = salesReps.find(rep => rep.id === goalData.salesRepId);
+                    const amount = parseFloat(goalData.actualAmount || '0');
+                    return (
+                      <div key={goalData.id} className="flex items-center gap-1">
+                        <div className={`w-1.5 h-1.5 bg-${colors[index % colors.length]} rounded-full`}></div>
+                        <span>{salesRep?.name || 'Unknown'}: ${(amount / 1000).toFixed(0)}k</span>
+                      </div>
+                    );
+                  });
                 })()}
               </div>
             </div>
@@ -604,12 +624,23 @@ export default function Dashboard() {
           icon={Banknote}
           label="Project Collections"
           value={(() => {
-            // Check if database has monthly finance data for collections
-            if (!monthlyFinance || monthlyFinance.length === 0) {
+            // Calculate total collections from AR Aging data
+            if (!arAging || arAging.length === 0) {
               return MOCK_KPI_VALUES.projectCollections;
             }
-            const collections = monthlyFinance.reduce((sum: number, item: any) => sum + (item.collections || 0), 0);
-            return `$${collections.toLocaleString()}`;
+            // Get the latest AR aging record
+            const latestAging = arAging[0]; // Assuming sorted by date desc
+            const totalOutstanding = parseFloat(latestAging.bucket030 || '0') + 
+                                   parseFloat(latestAging.bucket3160 || '0') + 
+                                   parseFloat(latestAging.bucket6190 || '0') + 
+                                   parseFloat(latestAging.bucket90plus || '0');
+            
+            // Calculate total collections (using mock ratio for now - could be enhanced with actual collected data)
+            const collectedRatio = 0.65; // 65% collected as shown in the bottom slot
+            const totalCollected = totalOutstanding / (1 - collectedRatio) * collectedRatio;
+            const totalProject = totalCollected + totalOutstanding;
+            
+            return `$${Math.round(totalProject).toLocaleString()}`;
           })()}
           sub="Collected vs Outstanding"
           data-testid="kpi-project-collections"
@@ -640,8 +671,31 @@ export default function Dashboard() {
           }
           bottomSlot={
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Collected: $316,758 (65%)</span>
-              <span>Outstanding: $170,562 (35%)</span>
+              {(() => {
+                if (!arAging || arAging.length === 0) {
+                  return (
+                    <>
+                      <span>Collected: $316,758 (65%)</span>
+                      <span>Outstanding: $170,562 (35%)</span>
+                    </>
+                  );
+                }
+                const latestAging = arAging[0];
+                const totalOutstanding = parseFloat(latestAging.bucket030 || '0') + 
+                                       parseFloat(latestAging.bucket3160 || '0') + 
+                                       parseFloat(latestAging.bucket6190 || '0') + 
+                                       parseFloat(latestAging.bucket90plus || '0');
+                
+                const collectedRatio = 0.65;
+                const totalCollected = totalOutstanding / (1 - collectedRatio) * collectedRatio;
+                
+                return (
+                  <>
+                    <span>Collected: ${Math.round(totalCollected).toLocaleString()} (65%)</span>
+                    <span>Outstanding: ${Math.round(totalOutstanding).toLocaleString()} (35%)</span>
+                  </>
+                );
+              })()}
             </div>
           }
         />
@@ -654,8 +708,13 @@ export default function Dashboard() {
             if (!arAging || arAging.length === 0) {
               return MOCK_KPI_VALUES.collectionDue;
             }
-            const totalDue = arAging.reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
-            return `$${totalDue.toLocaleString()}`;
+            // Get the latest AR aging record and sum all buckets
+            const latestAging = arAging[0]; // Assuming sorted by date desc
+            const totalDue = parseFloat(latestAging.bucket030 || '0') + 
+                           parseFloat(latestAging.bucket3160 || '0') + 
+                           parseFloat(latestAging.bucket6190 || '0') + 
+                           parseFloat(latestAging.bucket90plus || '0');
+            return `$${Math.round(totalDue).toLocaleString()}`;
           })()}
           sub="Jobs Completed"
           data-testid="kpi-collection-due"
@@ -679,25 +738,61 @@ export default function Dashboard() {
             if (!customerConcerns || customerConcerns.length === 0) {
               return MOCK_KPI_VALUES.customerConcerns;
             }
-            const openConcerns = customerConcerns.filter((concern: any) => concern.status === 'open').length;
-            return openConcerns.toString();
+            return customerConcerns.length.toString();
           })()}
-          sub="Active CCIs"
+          sub="Total Concerns"
           data-testid="kpi-customer-concerns"
-          sparkline={
-            <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
-              <div className="bg-chart-3 h-full" style={{ width: '45%' }}></div>
-              <div className="bg-chart-4 h-full" style={{ width: '30%' }}></div>
-              <div className="bg-destructive h-full" style={{ width: '25%' }}></div>
-            </div>
-          }
-          bottomSlot={
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Low: 8</span>
-              <span>Med: 5</span>
-              <span>High: 4</span>
-            </div>
-          }
+          sparkline={(() => {
+            if (!customerConcerns || customerConcerns.length === 0) {
+              return (
+                <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
+                  <div className="bg-chart-3 h-full" style={{ width: '45%' }}></div>
+                  <div className="bg-chart-4 h-full" style={{ width: '30%' }}></div>
+                  <div className="bg-destructive h-full" style={{ width: '25%' }}></div>
+                </div>
+              );
+            }
+            
+            const lowCount = customerConcerns.filter((concern: any) => concern.priority === 'Low').length;
+            const medCount = customerConcerns.filter((concern: any) => concern.priority === 'Med').length;
+            const highCount = customerConcerns.filter((concern: any) => concern.priority === 'High').length;
+            const total = customerConcerns.length || 1;
+            
+            const lowPercent = (lowCount / total) * 100;
+            const medPercent = (medCount / total) * 100;
+            const highPercent = (highCount / total) * 100;
+            
+            return (
+              <div className="flex h-2 bg-muted/20 rounded-full overflow-hidden">
+                <div className="bg-chart-3 h-full" style={{ width: `${lowPercent}%` }}></div>
+                <div className="bg-chart-4 h-full" style={{ width: `${medPercent}%` }}></div>
+                <div className="bg-destructive h-full" style={{ width: `${highPercent}%` }}></div>
+              </div>
+            );
+          })()}
+          bottomSlot={(() => {
+            if (!customerConcerns || customerConcerns.length === 0) {
+              return (
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Low: 8</span>
+                  <span>Med: 5</span>
+                  <span>High: 4</span>
+                </div>
+              );
+            }
+            
+            const lowCount = customerConcerns.filter((concern: any) => concern.priority === 'Low').length;
+            const medCount = customerConcerns.filter((concern: any) => concern.priority === 'Med').length;
+            const highCount = customerConcerns.filter((concern: any) => concern.priority === 'High').length;
+            
+            return (
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Low: {lowCount}</span>
+                <span>Med: {medCount}</span>
+                <span>High: {highCount}</span>
+              </div>
+            );
+          })()}
         />
       </div>
 

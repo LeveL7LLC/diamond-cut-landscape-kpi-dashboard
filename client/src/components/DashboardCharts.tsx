@@ -122,11 +122,37 @@ export function ARAgingChart() {
       return MOCK_AR_AGING; // fallback to centralized mock data
     }
     
-    return arAging.map((item: any) => ({
-      name: item.ageRange || item.name,
-      value: item.percentage || 0,
-      amount: item.amount || 0
-    }));
+    // Get the latest AR aging record and transform bucket data into chart format
+    const latestAging = arAging[0]; // Assuming sorted by date desc
+    const bucket030 = parseFloat(latestAging.bucket030 || '0');
+    const bucket3160 = parseFloat(latestAging.bucket3160 || '0');
+    const bucket6190 = parseFloat(latestAging.bucket6190 || '0');
+    const bucket90plus = parseFloat(latestAging.bucket90plus || '0');
+    
+    const total = bucket030 + bucket3160 + bucket6190 + bucket90plus;
+    
+    return [
+      { 
+        name: "0-30", 
+        value: total > 0 ? Math.round((bucket030 / total) * 100) : 0, 
+        amount: bucket030 
+      },
+      { 
+        name: "31-60", 
+        value: total > 0 ? Math.round((bucket3160 / total) * 100) : 0, 
+        amount: bucket3160 
+      },
+      { 
+        name: "61-90", 
+        value: total > 0 ? Math.round((bucket6190 / total) * 100) : 0, 
+        amount: bucket6190 
+      },
+      { 
+        name: "90+", 
+        value: total > 0 ? Math.round((bucket90plus / total) * 100) : 0, 
+        amount: bucket90plus 
+      }
+    ];
   }, [arAging]);
 
   const processedMarginVarianceData = useMemo(() => {
@@ -134,11 +160,35 @@ export function ARAgingChart() {
       return MOCK_MARGIN_VARIANCE; // fallback to centralized mock data
     }
     
-    return marginVariance.map((item: any) => ({
-      month: new Date(item.month).toLocaleDateString('en-US', { month: 'short' }),
-      actual: item.actualMargin || 0,
-      target: item.targetMargin || 0
-    }));
+    // Group margin variance data by month and calculate averages
+    const monthlyData: { [key: string]: { actualSum: number, bidSum: number, count: number } } = {};
+    
+    marginVariance.forEach((item: any) => {
+      const date = new Date(item.date);
+      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { actualSum: 0, bidSum: 0, count: 0 };
+      }
+      
+      monthlyData[monthKey].actualSum += parseFloat(item.actualMargin || '0');
+      monthlyData[monthKey].bidSum += parseFloat(item.bidMargin || '0');
+      monthlyData[monthKey].count += 1;
+    });
+    
+    // Convert to chart format with averages
+    return Object.entries(monthlyData)
+      .map(([month, data]) => ({
+        month,
+        actual: Math.round((data.actualSum / data.count) * 100) / 100,
+        target: Math.round((data.bidSum / data.count) * 100) / 100
+      }))
+      .sort((a, b) => {
+        // Sort by month chronologically
+        const dateA = new Date(a.month + ' 2025');
+        const dateB = new Date(b.month + ' 2025');
+        return dateA.getTime() - dateB.getTime();
+      });
   }, [marginVariance]);
 
   const processedServiceMixData = useMemo(() => {
@@ -276,9 +326,9 @@ export function CapacityChart() {
     }
     
     return weeklyCapacity.map((item: any) => ({
-      week: new Date(item.week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      capacity: item.capacity || 0,
-      utilization: item.utilization || 0
+      week: new Date(item.weekStarting).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      capacity: parseInt(item.availableHours) || 0,
+      utilization: parseInt(item.bookedHours) || 0
     }));
   }, [weeklyCapacity]);
 

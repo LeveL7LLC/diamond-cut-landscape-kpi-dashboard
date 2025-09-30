@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { BarChart3, Plus, Home } from "lucide-react";
+import { BarChart3, Plus, Home, Database } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
@@ -44,6 +44,17 @@ export default function Navigation() {
                 >
                   <Plus className="h-4 w-4" />
                   Data Entry
+                </Button>
+              </Link>
+              
+              <Link href="/data-management">
+                <Button 
+                  variant={location === "/data-management" ? "default" : "ghost"}
+                  className="w-full justify-start flex items-center gap-2"
+                  data-testid="nav-data-management"
+                >
+                  <Database className="h-4 w-4" />
+                  Data Management
                 </Button>
               </Link>
             </div>

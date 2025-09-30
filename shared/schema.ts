@@ -137,12 +137,15 @@ export const marginVariance = pgTable("margin_variance", {
 
 export const customerConcerns = pgTable("customer_concerns", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  openedAt: timestamp("opened_at").notNull(),
-  status: text("status").notNull().default('open'), // open, in_progress, resolved
-  description: text("description"),
-  priority: text("priority").default('medium'), // low, medium, high, urgent
-  resolvedAt: timestamp("resolved_at"),
+  date: date("date").notNull(),
+  description: text("description").notNull(), // renamed from 'concern' to 'description' for clarity
+  priority: text("priority").notNull().default('Med'), // Low, Med, High
+  serviceId: varchar("service_id").references(() => services.id),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
+}, (table) => {
+  return {
+    customerConcernsDateIdx: index("customer_concerns_date_idx").on(table.date),
+  };
 });
 
 // Goals and Targets

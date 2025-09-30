@@ -27,6 +27,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return result.data;
   };
 
+  // Global Search Route
+  app.get('/api/search', asyncHandler(async (req: any, res: any) => {
+    const { q } = req.query;
+    if (!q || typeof q !== 'string' || q.trim().length === 0) {
+      return res.json({ results: [] });
+    }
+    
+    const searchResults = await storage.globalSearch(q.trim());
+    res.json({ results: searchResults });
+  }));
+
   // Core Entity Routes
 
   // Lead Sources
@@ -392,10 +403,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(customerConcerns);
   }));
 
+  app.post('/api/customer-concerns', asyncHandler(async (req: any, res: any) => {
+    const validatedData = validateRequestBody(insertCustomerConcernsSchema, req.body);
+    const customerConcern = await storage.createCustomerConcerns(validatedData);
+    res.status(201).json(customerConcern);
+  }));
+
+  app.put('/api/customer-concerns/:id', asyncHandler(async (req: any, res: any) => {
+    const validatedData = validateRequestBody(insertCustomerConcernsSchema.partial(), req.body);
+    const customerConcern = await storage.updateCustomerConcerns(req.params.id, validatedData);
+    if (!customerConcern) {
+      return res.status(404).json({ error: 'Customer concern not found' });
+    }
+    res.json(customerConcern);
+  }));
+
+  app.delete('/api/customer-concerns/:id', asyncHandler(async (req: any, res: any) => {
+    const success = await storage.deleteCustomerConcerns(req.params.id);
+    if (!success) {
+      return res.status(404).json({ error: 'Customer concern not found' });
+    }
+    res.status(204).send();
+  }));
+
   // Sales Goals
   app.get('/api/sales-goals', asyncHandler(async (req: any, res: any) => {
     const salesGoals = await storage.getSalesGoals();
     res.json(salesGoals);
+  }));
+
+  app.post('/api/sales-goals', asyncHandler(async (req: any, res: any) => {
+    const validatedData = validateRequestBody(insertSalesGoalsSchema, req.body);
+    const salesGoal = await storage.createSalesGoals(validatedData);
+    res.status(201).json(salesGoal);
+  }));
+
+  app.put('/api/sales-goals/:id', asyncHandler(async (req: any, res: any) => {
+    const validatedData = validateRequestBody(insertSalesGoalsSchema.partial(), req.body);
+    const salesGoal = await storage.updateSalesGoals(req.params.id, validatedData);
+    if (!salesGoal) {
+      return res.status(404).json({ error: 'Sales goal not found' });
+    }
+    res.json(salesGoal);
+  }));
+
+  app.delete('/api/sales-goals/:id', asyncHandler(async (req: any, res: any) => {
+    const success = await storage.deleteSalesGoals(req.params.id);
+    if (!success) {
+      return res.status(404).json({ error: 'Sales goal not found' });
+    }
+    res.status(204).send();
   }));
 
   // Weekly Capacity
@@ -408,6 +465,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       weeklyCapacity = await storage.getWeeklyCapacity();
     }
     res.json(weeklyCapacity);
+  }));
+
+  app.post('/api/weekly-capacity', asyncHandler(async (req: any, res: any) => {
+    const validatedData = validateRequestBody(insertWeeklyCapacitySchema, req.body);
+    const weeklyCapacity = await storage.createWeeklyCapacity(validatedData);
+    res.status(201).json(weeklyCapacity);
+  }));
+
+  app.put('/api/weekly-capacity/:id', asyncHandler(async (req: any, res: any) => {
+    const validatedData = validateRequestBody(insertWeeklyCapacitySchema.partial(), req.body);
+    const weeklyCapacity = await storage.updateWeeklyCapacity(req.params.id, validatedData);
+    if (!weeklyCapacity) {
+      return res.status(404).json({ error: 'Weekly capacity record not found' });
+    }
+    res.json(weeklyCapacity);
+  }));
+
+  app.delete('/api/weekly-capacity/:id', asyncHandler(async (req: any, res: any) => {
+    const success = await storage.deleteWeeklyCapacity(req.params.id);
+    if (!success) {
+      return res.status(404).json({ error: 'Weekly capacity record not found' });
+    }
+    res.status(204).send();
   }));
 
   // Monthly Revenue
