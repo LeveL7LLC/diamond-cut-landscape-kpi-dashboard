@@ -49,7 +49,7 @@ export default function DateRangeSelector({ range, setRange, "data-testid": test
       </button>
       
       {open && (
-        <div className="absolute right-0 mt-2 w-64 rounded-xl border border-card-border bg-card/95 p-3 shadow-xl z-10 backdrop-blur-sm">
+        <div className="absolute left-0 sm:right-0 sm:left-auto mt-2 w-64 rounded-xl border border-card-border bg-card/95 p-3 shadow-xl z-10 backdrop-blur-sm">
           <div className="text-xs text-muted-foreground mb-2">Date range</div>
           <div className="flex gap-2 mb-3">
             {[7, 30, 90].map((days) => (
